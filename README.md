@@ -1,1 +1,1 @@
-# [My website and data analysis portfolio](https://github.com/seventeencents/seanosullivan-P2-portfolio)
+# [My website and data analysis portfolio](https://seventeencents.github.io/seanosullivan-P2-portfolio/)
