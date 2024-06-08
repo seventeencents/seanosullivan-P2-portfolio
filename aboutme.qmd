@@ -2,6 +2,6 @@
 title: "About me"
 ---
 
-Add some text and a figure describing myself.
+Testing.
 
 For details, see the exercise instructions. 
