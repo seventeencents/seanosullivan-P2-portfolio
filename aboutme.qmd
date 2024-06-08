@@ -1,7 +1,22 @@
 ---
-title: "About me"
+title: "About Me"
 ---
 
-Testing.
+![](About Me Photo.jpg){width=400}
 
-For details, see the exercise instructions. 
+My name is Sean O'Sullivan and I'm a data analyst at Disney. I have an Bachelor of Science in Economics from Texas A&M University -- College Station and have taken a handful of undergraduate statistics, calculus, and econometrics courses as a result. I've always been fascinated with technology and enjoy tinkering -- whether that means building mechanical keyboards or tinkering with software and programming languages. 
+
+As I've gotten older that fascination with technology, how it works, and what impacts it has on stakeholders in society has only grown. I often find myself frequenting articles about the changing internet landscape, transitions to sustainable energy, and (perhaps unsurprisingly given my undergraduate degree) the profound ways that access to new data driven technologies shape the economic opportunities of whole communities around the globe.
+
+As I've moved further into my career as a data analyst I've found myself drawn to the more advanced and technical side of things like data engineering and specifically data science. It's my aim with my MSDA degree (and an accompanying graduate certification in data science) to spend a lot less of my future career conceptualizing dashboards in Tableau and a lot more focused in designing reproducible analysis pipelines that are statistically and methodologically sound so that the work I do can generate more significant insights and inform product level decisions.
+
+However, my interests are more varied than simply technology and data. For instance at an earlier point in my career as a workforce analyst, when it seemed my data analysis journey had stalled, I considered quitting my job and starting work full-time as a photographer. I'd spent years doing part-time work and taking on event gigs for local bands and nonprofits, friends' weddings, professional headshots, etc. and I found that creative process to be incredibly freeing and less dependent on a trajectory charted out by an established, objective industry like data. I was ultimately insistent that I develop my data skillset, but the very real possibility that I might not be here today underscores how valuable I think artistic pursuits and hobbies can be to revitalizing your ambition. As a result I make a conscious effort to take time to either appreciate art or engage in creativity myself. If you'd like to connect with me professionally you can visit [my LinkedIn](https://www.linkedin.com/in/osullivanseanp/).
+
+### Data Resources I Recommend
+
+| Link      | Description |
+|:---------:|-------------|
+| [The Data Scientist Show](https://www.youtube.com/c/thedatascientistshow)  | A data science podcast hosted by Daliana Liu that covers topics from machine learning techniques to tools and job hunting. I find it helpful for reinforcing what I've learned so far as well as an avenue for new topics of interest to discover. |
+| [Matt Harrison's Python for Data Science Books](https://store.metasnake.com/)   | I've surveyed a few of Matt Harrison's courses that he's helped to author for the likes of Coursera, edX, and Pluralsight and have found his teaching style to be really easily to follow and the material is always something that can be directly and actively applied as you're going through the learning process. He also makes for a strong follow as a regular contributor to data science discourse on LinkedIn. I've personally recently purchased his Effective Pandas 2 book in order to refine my data wrangling skills.   |
+| [#TidyTuesday](https://twitter.com/search?q=%23tidytuesday&src=typed_query) | This is a link to the Tidy Tuesday hashtag on Twitter. In the fall semester of my MSDA degree I would regularly check out the various different interpretations of the same dataset that novice and experienced analysts alike were sharing. While I have less experience in R than I do in Python, I'm always impressed by the high-level of polish with which you can visualize in R. This hashtag helps to keep me inspired. |
+: {.striped .hover tbl-colwidths="[25,75]"}
