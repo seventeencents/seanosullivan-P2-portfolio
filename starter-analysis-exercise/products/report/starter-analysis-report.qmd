@@ -39,7 +39,7 @@ _Write a summary of your project._
 _Provide enough background on your topic that others can understand the why and how of your analysis_ 
 
 ## Description of data and data source
-_Describe what the data is, what it contains, where it is from, etc. Eventually this might be part of a methods section._
+The data sheet has been updated to include annual salary figures of each person in USD as well as their respective employement statuses (employed full-time, employed part-time, or unemployed).
 
 ## Questions/Hypotheses to be addressed
 _State the research questions you plan to answer with this analysis._
