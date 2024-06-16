@@ -107,13 +107,19 @@ d4 <- d3 %>% dplyr::filter( !(Gender %in% c("NA","N")) ) %>% droplevels()
 skimr::skim(d4)
 ```
 
+```{r}
+d5 <- d4 %>% dplyr::mutate(Salary = as.numeric(Salary),
+                           Employment = as.factor(Employment))
+skimr::skim(d4)
+```
+
 
 All done, data is clean now. 
 
 Let's assign at the end to some final variable, this makes it easier to add further cleaning steps above.
 
 ```{r}
-processeddata <- d4
+processeddata <- d5
 ```
 
 
