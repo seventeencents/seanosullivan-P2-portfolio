@@ -114,18 +114,24 @@ For your own explorations, tables and figures can be "quick and dirty". As long 
 Make a copy, add code to the new file that creates a boxplot with the new categorical variable (whatever it is) on the x-axis, and height on the y-axis. 
 
 ```{r}
-ggplot(mydata, aes(x = Employment, y = Height)) +
+p5 <- ggplot(mydata, aes(x = Employment, y = Height)) +
   geom_boxplot(fill = "skyblue", color = "black") +
   labs(x = "Employment", y = "Height", title = "Boxplot of Height by Employment") +
   theme_minimal()
+plot(p5)
+figure_file = here("starter-analysis-exercise","results","figures","height-employ-boxplot.png")
+ggsave(filename = figure_file, plot=p5) 
 ```
 
 Also create a scatterplot with weight on the x-axis and the new numerical variable on the y-axis. Save both figures to files.
 
 ```{r}
-mydata[which(!is.na(mydata$Salary)),] %>% 
+p6 <- mydata[which(!is.na(mydata$Salary)),] %>% 
   ggplot(aes(x = Weight, y = Salary)) +
   geom_point(color = "blue") +
   labs(x = "Weight", y = "Salary", title = "Scatter Plot of Weight vs. Salary") +
   theme_minimal()
+plot(p6)
+figure_file = here("starter-analysis-exercise","results","figures","weight-salary-scatter.png")
+ggsave(filename = figure_file, plot=p6) 
 ```
