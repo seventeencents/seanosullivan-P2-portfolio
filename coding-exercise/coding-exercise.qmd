@@ -2,4 +2,112 @@
 title: "R Coding Exercise"
 ---
 
-Placeholder file for the future R coding exercise.
+```{r}
+# load and install necessary packages for notebook
+pacman::p_load(dslabs,
+               ggplot2,
+               ggthemes,
+               skimr,
+               tidyverse)
+```
+
+```{r}
+# look at help file for gapminder
+help(gapminder)
+```
+
+```{r}
+# get an overview of the data
+str(gapminder)
+```
+
+```{r}
+# get a summary of the data
+summary(gapminder)
+```
+
+```{r}
+# determine gapminder object type
+class(gapminder)
+```
+
+```{r}
+# create an African data only subset
+africandata <- gapminder %>% filter(continent == "Africa")
+str(africandata)
+summary(africandata)
+```
+
+```{r}
+# create mortality and life expectancy subset dataframe
+mortexp <- africandata %>% select(infant_mortality, life_expectancy)
+str(mortexp)
+summary(mortexp)
+```
+
+```{r}
+# create population and life expectancy subset dataframe
+popexp <- africandata %>% select(population, life_expectancy)
+str(popexp)
+summary(popexp)
+```
+
+```{r}
+#creating a plot of infant mortality and life expectancy
+mortexp %>% 
+  ggplot(aes(x = infant_mortality, y = life_expectancy)) +
+  geom_point(alpha = 0.3, color = "coral2", na.rm = TRUE) +
+  xlab("Infant Mortality Rate") + ylab("Life Expectancy") +
+  theme_clean()
+```
+
+```{r}
+#creating a plot of population and life expectancy
+popexp %>% 
+  ggplot(aes(x = population, y = life_expectancy)) +
+  geom_point(alpha = 0.3, color = "coral2", na.rm = TRUE) +
+  xlab("Population") + ylab("Life Expectancy") +
+  scale_x_continuous(trans = "log") +
+  theme_clean()
+```
+
+Looking at the above plots we can observe nearly linearly connected streaks in the data which corresponds with the autocorrelative nature of the annual data found in our original dataset. 
+
+```{r}
+# examine a subset dataframe that only contains missing infant mortality rows
+summary(africandata %>% filter(is.na(infant_mortality)))
+# create subset of African data for the year 2000
+africandata2000 <- africandata %>% filter(year == 2000)
+str(africandata2000)
+summary(africandata2000)
+```
+
+```{r}
+#creating a plot of infant mortality and life expectancy for 2000
+africandata2000 %>% 
+  ggplot(aes(x = infant_mortality, y = life_expectancy)) +
+  geom_point(alpha = 0.65, color = "coral2") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "slategrey") +
+  xlab("Infant Mortality Rate") + ylab("Life Expectancy") +
+  theme_clean()
+#creating a plot of population and life expectancy for 2000
+africandata2000 %>% 
+  ggplot(aes(x = population, y = life_expectancy)) +
+  geom_point(alpha = 0.65, color = "coral2") +
+  xlab("Population") + ylab("Life Expectancy") +
+  scale_x_continuous(trans = "log") +
+  theme_clean()
+```
+
+When we examine a single year (in this case the year `2000`) we observe that there is a negative relationship between infant mortality rate and life expectancy.
+
+```{r}
+# fit linear model of life expectancy as a function of infant mortality
+fit1 <- lm(life_expectancy ~ infant_mortality, data = africandata2000)
+summary(fit1)
+# fit linear model of life expectancy as a function of population
+fit2 <- lm(life_expectancy ~ population, data = africandata2000)
+summary(fit2)
+```
+
+Based on linear models fit against both population and infant mortality we can see that we have a statistically significant relationship between infant mortality and life expectancy, but no such similarly significant relationship with population. The former relationship makes intuitive sense -- the more deaths as an infant the more downwardly skewed you would expect the life expectancy of that country. 
