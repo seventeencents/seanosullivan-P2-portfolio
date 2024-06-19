@@ -71,7 +71,7 @@ popexp %>%
   theme_clean()
 ```
 
-Looking at the above plots we can observe nearly linearly connected streaks in the data which corresponds with the autocorrelative nature of the annual data found in our original dataset. 
+Looking at the above plots we can observe nearly linearly connected streaks in the data which corresponds with the autocorrelative nature of the annual data found in our original dataset.
 
 ```{r}
 # examine a subset dataframe that only contains missing infant mortality rows
@@ -110,4 +110,165 @@ fit2 <- lm(life_expectancy ~ population, data = africandata2000)
 summary(fit2)
 ```
 
-Based on linear models fit against both population and infant mortality we can see that we have a statistically significant relationship between infant mortality and life expectancy, but no such similarly significant relationship with population. The former relationship makes intuitive sense -- the more deaths as an infant the more downwardly skewed you would expect the life expectancy of that country. 
+Based on linear models fit against both population and infant mortality we can see that we have a statistically significant relationship between infant mortality and life expectancy, but no such similarly significant relationship with population. The former relationship makes intuitive sense -- the more deaths as an infant the more downwardly skewed you would expect the life expectancy of that country.
+
+### This section contributed by William Hyltin
+
+For this part of the exercise we will look at the "murders" dataset, which contains gun murder data from FBI report from the year 2010.
+
+```{r}
+#importing one more package to help with choropleth plot later
+pacman::p_load(maps)
+```
+
+Observing the help file to understand the variables in the dataset.
+```{r}
+help(murders)
+```
+
+Understanding the structure of the data.
+```{r}
+str(murders)
+```
+
+Understanding the distribution and basics stats of the variables in the dataset.
+```{r}
+summary(murders)
+```
+
+Finally, confirming the data type is in fact a data frame.
+```{r}
+class(murders)
+```
+
+The "total" is somewhat non-descriptive, so I rename the variable so that I don't mistake it for population or some other representation of the data (e.g. the dataset is *gun* murder but there would be no way to tell that its gun murder from just the data or columns).
+Also, given the geographic nature of the data I will want to play with a choropleth map. The `maps` package I brought in earlier will have some conflicts with a column named "region," so we rename it here while we're under the hood.
+```{r}
+# renaming "total" column and region column, because region column will have later conflicts
+d1 <- murders %>% rename(gun_deaths = total, geo_region = region)
+# names function to get the names of the columns.
+names(d1)
+```
+
+Jumping ahead a bit, there are likely some problems with just using a count of gun deaths alone. factors like population, which is included, will play a part. A standard measurement for deaths is number of deaths per 100,000 people, and while there is generally more that goes into the calculation of this metric, we can use a simple version here by dividing `gun_deaths` by `population` and multiplying by 100,000.
+Again, while we are under the hood, we make change the `state` variable to lower case, which will again help when we merge to our map data, and we change the `geo_region` variable to a factor, which helps with visualizations later on.
+```{r}
+# new column with gun deaths per 100,000 in population
+# lower case state names for later merge for visualization
+#region as a factor variable
+d2 <- d1 %>% mutate(
+  dpp = gun_deaths / population * 100000,
+  state = tolower(state),
+  geo_region = as.factor(geo_region)
+)
+```
+
+As a quick check for outliers and to make sure the previous mutates worked as expected, we can take the top 10 values from the dataset, ordered in descending order by `dpp`. We find one in District of Columbia, which is more than double the next highest value in deaths per 100,000 people. Given its generally lower population (though worth noting, not lowest), and its unique status of not being a state, it seems a little unfair to compare states to it. I made the decision to exclude it here.
+```{r}
+d2 %>% arrange(-dpp) %>% head(10)
+d2 <- d2 %>% filter(dpp!=max(dpp))
+```
+
+A few last odds and ends before we go into visualizations, here we use the map_data function to get a dataset of map location and shape information. This is important for the choropleth map we make momentarily.
+```{r}
+#creating a map dataframe for states
+states <- map_data('state')
+```
+
+Once we have our map dataset, we can merge it to the gun deaths dataset. We erge by the field `region` in the map dataset, which was the lower-case state name, and the `state` field in the gun deaths dataset. This is why we needed the state name to be lower case in our main data, and also why we could not have a field named `region` to identify the geographic region and not the state. The order function at the end is to ensure the shape data for each state is in the correct order to be drawn later.
+```{r}
+choro <- merge(states, d2, sort=FALSE, by.x = 'region', by.y = 'state')
+choro <- choro[order(choro$order),]
+```
+
+The geographic region is the broadest of our categorical variables, so I wanted to start here. This code summarizes the variables of interest by summing up the respective region groups, with the exception of dpp which would need to be recalculated to roll up to this level.
+We see the differences are not too large, with the exception of the South which is generally larger in all three variables over the other regions.
+```{r}
+#summarizing by geo_region
+gun_region <- d2 %>% 
+  group_by(geo_region) %>%
+  summarize(
+    tot_gun = sum(gun_deaths),
+    population = sum(population),
+    dpp = sum(gun_deaths)/sum(population) * 100000
+  ) %>% as.data.frame() %>% arrange(-tot_gun)
+head(gun_region) # df only four rows, but head() used in case something blew up somehow
+```
+
+We visualize the above gun_deaths information here for the sake of consumption.
+```{r}
+# bar chart of regions
+gun_region %>% ggplot(aes(x=fct_reorder(geo_region,-tot_gun), y=tot_gun)) +
+  geom_bar(stat = 'identity') +
+  labs(title = 'Count of US Gun Deaths by Geographic Region', x = 'Geographic Region', y = 'Gun Deaths')
+```
+
+The choropleth map here gives us an idea of the number of deaths by state in order to help identify any particular regions or locations that are more dangerous than others. However this plot could almost serve as a proxy for population, because the most populous states generally have the most gun deaths.
+geom_polygon was used along with the merged map data, and gun_deaths was used as the fill to highlight states with more gun deaths than others.
+```{r}
+# ggplot and geom_polygon for chorpleth map, using gun_deaths
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill = gun_deaths), color = 'white') +
+  coord_map('albers', lat0 = 45.5, lat1=29.5) + 
+  labs(title = 'Total US Gun Deaths', x = '', y = '') +
+  scale_fill_continuous(name = 'Number of \nGun Deaths') # legend title
+```
+
+To remedy the last plots being obscured by the population, we can use the `dpp` variable we created instead of gun_deaths. Now we have generally better demarcation of states with more gun deaths. Still, it has not told us too much that is new. We see some states that stand out as being higher, and generally the Northern parts of the West are low. However, this begs the question, are gun deaths just as bad everywhere, except a few states? Put simply, do gun deaths happen more often in some states solely because of population, do more gun deaths in a state lead to more deaths per person?
+```{r}
+# ggplot and geom_polygon for chorpleth map, using dpp
+ggplot(choro, aes(long, lat)) +
+  geom_polygon(aes(group = group, fill = dpp), color = 'white') +
+  coord_map('albers', lat0 = 45.5, lat1=29.5) +
+  labs(title = 'US Gun Deaths per 100,000 People', x = '', y = '') + 
+  scale_fill_continuous(name = 'Deaths \nper 100,000')
+```
+
+Backing up a bit, here we plot gun deaths against population, and a clear linear trend exists, though that may be emphasized by California in the top right. Thus far it appears to be that population is the major factor, but if this is true then if we plot deaths per person against gun deaths there should be no slope, because as gun deaths increase, population would also be increasing at a constant rate.
+For this and subsequent charts, geom point is used, with each region marked by different colored points, with the intention of seeing if there is any clustering going on.
+```{r}
+d2 %>% ggplot(aes(x=population, y=gun_deaths, color = geo_region)) + 
+  geom_point() +
+  labs(title = 'US Gun Deaths vs Population', x = 'Population', y = 'Gun Deaths')
+```
+
+Here we see the trend become much less apparent. It appears that deaths per 100,000 increases with the number of deaths at first, but then we get several observations where the trend seems to dissipate. However Deaths per 100,000 people is a much smaller scale than gun_deaths, so some additional transformations may bring us some clarity here.
+```{r}
+d2 %>% ggplot(aes(x=gun_deaths, y=dpp, color = geo_region)) + 
+  geom_point() +
+  labs(title = 'Gun Deaths per 100,000 People vs Count of Gun Deaths', x = 'Gun Deaths', y = 'Deaths per 100,000 People')
+```
+
+This plot is the same as the last one, but with a log base 2 scale for the count of gun deaths, to help with the disparity between the two variables. Our trend is much clearer now, which would suggest that gun deaths do not only increase with population. We can use some statistical methods to determine if the relationship is significant or not.
+`scale_x_continuous()` was used to transform the previous plot into a log base two scale. Additionally, bquote was used to get a subscript '2' in the x-axis title.
+```{r}
+d2 %>% ggplot(aes(x=gun_deaths, y=dpp, color = geo_region)) + 
+  geom_point() +
+  scale_x_continuous(trans = 'log2') +
+  labs(title = 'Gun Deaths per 100,000 People vs Count of Gun Deaths', y = 'Deaths per 100,000 People',
+  x = bquote('Gun Deaths log'[2]))
+```
+From here we have fit three linear models. The first of which is a baseline of sorts, fitting gun deaths as a function of population, and geographical region.
+```{r}
+fit3 <- lm(gun_deaths ~ population + geo_region, data = d2) # lm fits the model
+summary(fit3) # summary gives us the results
+```
+
+We can see the results are statistically significant. That is to say, we would reject the null hypothesis that there is no linear relationship between population and geographical region (specifically if the state is a southern state), and the number of gun deaths. This is to be expected, the question ultimately is whether larger gun deaths in one state versus another can be dismissed as a result of differences in population. Population effects the overall count, but frequency per person still must be observed.
+
+Here we fit a model for deaths per 100,000 people as a function of gun deaths and geographical region. Note the transformation taken for gun deaths was only applied to the one variable.
+```{r}
+fit4 <- lm(dpp ~ log2(gun_deaths) + geo_region, data = d2) # log2 only taken on gun_deaths
+summary(fit4)
+```
+
+Again we see statistically significant results, so we would reject the null hypothesis that there is no linear relationship between the log base 2 of gun deaths and geographical region, and gun deaths per 100,000 people. It is worth noting the Adjusted R Square is .5857, meaning 58.57% of the variance is explained by this model. The last model had a better R-square, but again that is to be expected, and we will see in a moment that population explains less variance in the rate than the count of gun deaths does.
+
+Our last model is a sanity check of sorts, but we fit deaths per 100,000 people against the log base 2 of the population. We do this to determine if this relationship exists and to see how much variance it explains compared to the last model.
+```{r}
+fit5 <- lm(dpp ~ log2(population) + geo_region, data = d2)
+summary(fit5)
+```
+
+We still see statistically significant results, so we would still reject the null hypothesis that there is no linear relationship between the log base 2 of population and geographical region, and deaths per 100,000 people. However, we can see there is an adjusted R-Square of 0.3645, so only 36.45% of the variance is explained by this model. While there is a significant amount of variation explained here, more variation is explained by the count of gun deaths than population. 
+With this, it would be safe to say that a larger number of gun deaths in a state is not just a result of a larger population, and would likely lead to a larger rate of gun deaths overall.
