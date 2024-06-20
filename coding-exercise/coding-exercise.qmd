@@ -117,8 +117,9 @@ Based on linear models fit against both population and infant mortality we can s
 For this part of the exercise we will look at the "murders" dataset, which contains gun murder data from FBI report from the year 2010.
 
 ```{r}
-#importing one more package to help with choropleth plot later
-pacman::p_load(maps)
+#importing two more packages to help with choropleth plot later
+pacman::p_load(maps,
+               mapproj)
 ```
 
 Observing the help file to understand the variables in the dataset.
