@@ -1,288 +1,277 @@
 ---
-title: "R Coding Exercise"
+title: "Complex Data Exercise"
 ---
+
+# Introduction and Setup
+
+For this exercise we're going to examine some raw text data in the form of song lyrics. Specifically we're going to be taking a look at the lyrics of the band blink-182 (which I had the pleasure of seeing on 6/24/24) and examining the sentiment and word choice of their lyrics across years, albums, and songs. The lyric data has been sourced from the website Genius -- which allows both artists and fans alike to crowd source song lyrics. As a result some minor stylistic differences between songs may be present.
+
+![](../data-exercise/blink.jpg)
+
+## Data Import and Type Conversions
 
 ```{r}
 # load and install necessary packages for notebook
-pacman::p_load(dslabs,
-               ggplot2,
-               ggthemes,
-               skimr,
-               tidyverse)
+pacman::p_load(here,
+               tidytext,
+               textdata,
+               tidyverse,
+               wordcloud2)
+
+# read in dataframe and fix date, album, and track number columns
+blink_df <- read_csv(here("data-exercise/data/raw-data/blink-lyrics.csv"),
+                     col_names = TRUE,
+                     show_col_types = FALSE) %>% 
+            mutate(ReleaseDate = mdy(ReleaseDate),
+                   TrackNumber = as.factor(TrackNumber),
+                   Album = factor(Album,
+                                  levels = c("Cheshire Cat",
+                                            "Dude Ranch",
+                                            "Enema of the State",
+                                            "Take Off Your Pants and Jacket",
+                                            "blink-182",
+                                            "Neighborhoods",
+                                            "California", 
+                                            "Nine",
+                                            "One More Time…")))
 ```
+
+## Tokenizing Lyrics by Album and Joining Sentiment Data
 
 ```{r}
-# look at help file for gapminder
-help(gapminder)
+# tokenizing lyrics and joining sentiment values and classifications
+# collect counts by album
+album_sentiments <- blink_df %>% 
+                    unnest_tokens(word, Lyrics) %>% 
+                    anti_join(stop_words, join_by(word)) %>% 
+                    inner_join(get_sentiments("afinn"), join_by(word)) %>% 
+                    mutate(class = case_when(value < 0 ~ "negative",
+                                              value > 0 ~ "positive",
+                                              .default = "neutral")) %>% 
+                    count(Album, class, sort = TRUE) %>% 
+                    pivot_wider(names_from = class, values_from = n)
+
+# tokenizing lyrics and collecting total non-stopwords by album
+album_total_words <- blink_df %>%
+               unnest_tokens(word, Lyrics) %>% 
+               anti_join(stop_words, join_by(word)) %>% 
+               count(Album, word) %>% 
+               summarize(total = sum(n), .by = Album)
+
+# joining sentiment word counts with total word counts by album
+#creating positivity/negative ratios per album
+album_ratios <- album_sentiments %>% 
+                  inner_join(album_total_words, join_by(Album)) %>% 
+                  mutate(positivity = positive/total,
+                         negativity = negative/total)
 ```
+
+## Tokenizing Lyrics by Song and Joining Sentiment Data
 
 ```{r}
-# get an overview of the data
-str(gapminder)
+# tokenizing lyrics and joining sentiment values and classifications
+# collect counts by song
+song_sentiments <- blink_df %>% 
+                    unnest_tokens(word, Lyrics) %>% 
+                    anti_join(stop_words, join_by(word)) %>% 
+                    inner_join(get_sentiments("afinn"), join_by(word)) %>% 
+                    mutate(class = case_when(value < 0 ~ "negative",
+                                              value > 0 ~ "positive",
+                                              .default = "neutral")) %>% 
+                    count(Album, SongName, TrackNumber, class, sort = TRUE) %>% 
+                    pivot_wider(names_from = class, values_from = n, values_fill = 0)
+  
+# tokenizing lyrics and collecting total non-stopwords by song
+song_total_words <- blink_df %>%
+               unnest_tokens(word, Lyrics) %>% 
+               anti_join(stop_words, join_by(word)) %>% 
+               count(Album, SongName, word) %>% 
+               group_by(Album, SongName) %>% 
+               summarize(total = sum(n))
+
+# joining sentiment word counts with total word counts by song
+# creating positivity/negative ratios per song
+song_neg_pos <- song_sentiments %>% 
+                   inner_join(song_total_words, join_by(SongName)) %>% 
+                   mutate(positivity = positive/total,
+                         negativity = negative/total,
+                         Album = Album.x) %>% 
+                   select(Album, SongName, TrackNumber, negativity, positivity)
 ```
+
+# Exploring and Visualizing the Data
+
+## Sentiment Over Time
 
 ```{r}
-# get a summary of the data
-summary(gapminder)
+# plot positivity and negativity throughout the years
+blink_df %>% 
+  select(Album, ReleaseDate) %>% 
+  summarise(ReleaseDate = max(ReleaseDate), .by = Album) %>% 
+  # rejoin with original dataframe for release years
+  inner_join(album_ratios, join_by(Album)) %>%
+  mutate(selftitled = as.factor(case_when(Album == "blink-182" ~ "yes",
+                                .default = "no"))) %>% 
+  select(-positive, -negative, -total) %>% 
+  pivot_longer(cols = 3:4,
+               names_to = "type",
+               values_to = "value") %>% 
+  ggplot(aes(x = ReleaseDate, y = value, colour = type)) +
+  geom_point(aes(shape = selftitled), size = 4) +
+  scale_shape_manual(values = c(20, 18)) +
+  geom_line() + 
+  facet_wrap(~type, ncol = 1, scales = "free_y") +
+  expand_limits(y = 0) +
+  scale_y_continuous(labels = scales::percent, ) +
+  scale_x_date(date_breaks = "2 years", date_labels = "'%y") +
+  scale_color_discrete(type = c("deeppink1", "aquamarine2")) +
+  theme_minimal() +
+  xlab("Release Year") + ylab(NULL) +
+  labs(title = "Blink-182 Sentiment Through The Years") +
+  theme(plot.title = element_text(face = "bold", size = 20),
+        legend.position = "none",
+        axis.title.x = element_text(face = "bold"),
+        axis.text.x = element_text(angle = 45)) 
 ```
+
+Examining the lyrical sentiment of blink-182 over the years there is a clear bias towards more negative sentiment throughout the entirety of their career. Looking a little more closely we'll notice that their self-title album (highlighted with a diamond data point) represented their most negative record by a significant amount while also being among one of their least positive albums. It's also worth noting the historical context of the period, as this would also be their first full album following the terror attacks of 9/11. Subsequent releases in later years would be substantially less negative.
+
+## Top Songs by Negativity
 
 ```{r}
-# determine gapminder object type
-class(gapminder)
+# plot top negative songs color coded by album
+song_neg_pos %>%
+  select(SongName, Album, negativity) %>% 
+  slice_max(negativity, n = 10) %>% 
+  ggplot(aes(negativity, reorder(SongName, negativity), fill = Album)) + 
+  geom_col() + 
+  scale_x_continuous(labels = scales::percent) +
+  scale_fill_discrete(type = c("firebrick2",
+                               "cyan3",
+                               "gold",
+                               "aquamarine2",
+                               "deeppink1",
+                               "grey10")) +
+  theme_minimal() + 
+  xlab("Negativity") + ylab(NULL) +
+  labs(title = "Most Negative Songs") +
+  theme(plot.title = element_text(hjust = -0.35, face = "bold", size = 20),
+        legend.position = "none",
+        axis.title.x = element_text(face = "bold"))
 ```
+
+Given what was previously seen with the time series data it comes as no surprise that 3 of the top 10 songs by negativity throughout blink-182's career were featured on their self-title album. All 3 of which are among the top 4 most negative songs across all records.
+
+## Examining Negativity Journeys Within Albums
 
 ```{r}
-# create an African data only subset
-africandata <- gapminder %>% filter(continent == "Africa")
-str(africandata)
-summary(africandata)
+# plot negativity progress through each album by song
+song_neg_pos %>% 
+  ggplot(aes(TrackNumber, negativity, fill = Album)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~Album, ncol = 3, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal() +
+  xlab("Track Number") + ylab("Negativity") +
+  scale_fill_discrete(type = c("burlywood4",
+                               "firebrick2",
+                               "cyan3",
+                               "gold",
+                               "aquamarine2",
+                               "grey35",
+                               "chocolate1",
+                               "deeppink1",
+                               "grey10")) +
+  labs(title = "Negativity Across Track Numbers",
+       subtitle = "While most records peak in the middle, EotS and Neighborhoods buck the trend") +
+  theme(plot.title = element_text(face = "bold", size = 20),
+        plot.subtitle = element_text(size = 12),
+        legend.position = "none",
+        axis.title.x = element_text(face = "bold"),
+        axis.text.x = element_text(size = 6, angle = 0))
 ```
+
+With track listing orders we can plot the negativity journeys within each major record release. In general we can see a trend towards burying peak negativity in the middle of the record. Dude Ranch, blink-182, and Nine all demonstrate this well. With songs like Enthused, The Fallen Interlude, and I Really Wish I Hated You all peaking towards the middle of the track list. Even lesser negative albums like Cheshire Cat and California feature their most negative tracks (Does My Breath Smell? and Home is Such a Lonely Place, respectively) at track number 8.
 
 ```{r}
-# create mortality and life expectancy subset dataframe
-mortexp <- africandata %>% select(infant_mortality, life_expectancy)
-str(mortexp)
-summary(mortexp)
+# create barcharts for negative word counts in middle track listings
+blink_df %>% 
+  unnest_tokens(word, Lyrics) %>% 
+  anti_join(stop_words, join_by(word)) %>%
+  inner_join(get_sentiments("afinn"), join_by(word)) %>% 
+  mutate(class = case_when(value < 0 ~ "negative",
+                           value > 0 ~ "positive",
+                           .default = "neutral")) %>%
+  count(Album, SongName, word, class, sort = TRUE) %>% 
+  filter(class == "negative") %>% 
+  select(-class) %>% 
+  filter(SongName == "Enthused" | 
+         SongName == "Does My Breath Smell?" | 
+         SongName == "Home Is Such a Lonely Place" |
+         SongName == "I Really Wish I Hated You") %>% 
+  ggplot(aes(y = n, x = reorder(word, -n), fill = Album)) +
+  geom_col() +
+  facet_wrap(~SongName, scales = "free_x", ncol = 4) +
+  theme_minimal() +
+  xlab("Words") + ylab("Frequency") +
+  scale_fill_discrete(type = c("burlywood4",
+                               "firebrick2",
+                               "chocolate1",
+                               "deeppink1")) +
+  labs() +
+  theme(plot.title = element_text(face = "bold", size = 20),
+        plot.subtitle = element_text(size = 12),
+        legend.position = "none",
+        axis.title.x = element_text(face = "bold"),
+        axis.title.y = element_text(face = "bold"),
+        axis.text.x = element_text(size = 6, angle = 45))
 ```
+
+## Word Clouds
+
+While interactive word clouds aren't the best option for visualizing with a great deal of intepretability and accuracy, they can be useful for surfacing a handful of the greatest values while being graphically pleasing and information dense.
 
 ```{r}
-# create population and life expectancy subset dataframe
-popexp <- africandata %>% select(population, life_expectancy)
-str(popexp)
-summary(popexp)
+# plot negative word cloud
+blink_df %>% 
+  unnest_tokens(word, Lyrics) %>% 
+  anti_join(stop_words, join_by(word)) %>%
+  inner_join(get_sentiments("afinn"), join_by(word)) %>% 
+  mutate(class = case_when(value < 0 ~ "negative",
+                           value > 0 ~ "positive",
+                           .default = "neutral")) %>%
+  count(word, class, sort = TRUE) %>% 
+  filter(class == "negative") %>% 
+  select(-class) %>% 
+  slice_max(n, n = 300) %>% 
+  with(wordcloud2(data = ., fontFamily = "sans-serif", color = "random-dark"))
+
+# plot positive word cloud
+blink_df %>% 
+  unnest_tokens(word, Lyrics) %>% 
+  anti_join(stop_words, join_by(word)) %>%
+  inner_join(get_sentiments("afinn"), join_by(word)) %>% 
+  mutate(class = case_when(value < 0 ~ "negative",
+                           value > 0 ~ "positive",
+                           .default = "neutral")) %>%
+  count(word, class, sort = TRUE) %>% 
+  filter(class == "positive") %>% 
+  select(-class) %>% 
+  slice_max(n, n = 300) %>% 
+  with(wordcloud2(data = ., size = 2, fontFamily = "sans-serif", color = "random-dark"))
 ```
+
+The sheer quantity of negative words visualized in the above word cloud, when compared to the positive words, makes clear the disparity in sentiment classes. Additionally these word clouds make it quite a bit easier to judge the intensity of the words ourselves be laying many more out than can comfortably fit on a traditional plot. It's clear to see that the word 'love' is doing a lot of heavy lifting on the positive sentiment side, while many violent or vulgar words dominate the negative sentiment side.
+
+## N-Gram Cloud and All the Small Things
 
 ```{r}
-#creating a plot of infant mortality and life expectancy
-mortexp %>% 
-  ggplot(aes(x = infant_mortality, y = life_expectancy)) +
-  geom_point(alpha = 0.3, color = "coral2", na.rm = TRUE) +
-  xlab("Infant Mortality Rate") + ylab("Life Expectancy") +
-  theme_clean()
+# plot ngram cloud
+blink_df %>% 
+  unnest_tokens(ngram, Lyrics, token = "ngrams", n = 3) %>% 
+  count(ngram, sort = TRUE) %>% 
+  slice_max(n, n = 200) %>% 
+  with(wordcloud2(data = ., shape = "star", fontFamily = "sans-serif", color = "random-dark"))
 ```
 
-```{r}
-#creating a plot of population and life expectancy
-popexp %>% 
-  ggplot(aes(x = population, y = life_expectancy)) +
-  geom_point(alpha = 0.3, color = "coral2", na.rm = TRUE) +
-  xlab("Population") + ylab("Life Expectancy") +
-  scale_x_continuous(trans = "log") +
-  theme_clean()
-```
-
-Looking at the above plots we can observe nearly linearly connected streaks in the data which corresponds with the autocorrelative nature of the annual data found in our original dataset.
-
-```{r}
-# examine a subset dataframe that only contains missing infant mortality rows
-summary(africandata %>% filter(is.na(infant_mortality)))
-# create subset of African data for the year 2000
-africandata2000 <- africandata %>% filter(year == 2000)
-str(africandata2000)
-summary(africandata2000)
-```
-
-```{r}
-#creating a plot of infant mortality and life expectancy for 2000
-africandata2000 %>% 
-  ggplot(aes(x = infant_mortality, y = life_expectancy)) +
-  geom_point(alpha = 0.65, color = "coral2") +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "slategrey") +
-  xlab("Infant Mortality Rate") + ylab("Life Expectancy") +
-  theme_clean()
-#creating a plot of population and life expectancy for 2000
-africandata2000 %>% 
-  ggplot(aes(x = population, y = life_expectancy)) +
-  geom_point(alpha = 0.65, color = "coral2") +
-  xlab("Population") + ylab("Life Expectancy") +
-  scale_x_continuous(trans = "log") +
-  theme_clean()
-```
-
-When we examine a single year (in this case the year `2000`) we observe that there is a negative relationship between infant mortality rate and life expectancy.
-
-```{r}
-# fit linear model of life expectancy as a function of infant mortality
-fit1 <- lm(life_expectancy ~ infant_mortality, data = africandata2000)
-summary(fit1)
-# fit linear model of life expectancy as a function of population
-fit2 <- lm(life_expectancy ~ population, data = africandata2000)
-summary(fit2)
-```
-
-Based on linear models fit against both population and infant mortality we can see that we have a statistically significant relationship between infant mortality and life expectancy, but no such similarly significant relationship with population. The former relationship makes intuitive sense -- the more deaths as an infant the more downwardly skewed you would expect the life expectancy of that country.
-
-### This section contributed by William Hyltin
-
-For this part of the exercise we will look at the "murders" dataset, which contains gun murder data from FBI report from the year 2010.
-
-```{r}
-#importing two more packages to help with choropleth plot later
-pacman::p_load(maps,
-               mapproj)
-```
-
-Observing the help file to understand the variables in the dataset.
-
-```{r}
-help(murders)
-```
-
-Understanding the structure of the data.
-
-```{r}
-str(murders)
-```
-
-Understanding the distribution and basics stats of the variables in the dataset.
-
-```{r}
-summary(murders)
-```
-
-Finally, confirming the data type is in fact a data frame.
-
-```{r}
-class(murders)
-```
-
-The "total" is somewhat non-descriptive, so I rename the variable so that I don't mistake it for population or some other representation of the data (e.g. the dataset is *gun* murder but there would be no way to tell that its gun murder from just the data or columns). Also, given the geographic nature of the data I will want to play with a choropleth map. The `maps` package I brought in earlier will have some conflicts with a column named "region," so we rename it here while we're under the hood.
-
-```{r}
-# renaming "total" column and region column, because region column will have later conflicts
-d1 <- murders %>% rename(gun_deaths = total, geo_region = region)
-# names function to get the names of the columns.
-names(d1)
-```
-
-Jumping ahead a bit, there are likely some problems with just using a count of gun deaths alone. factors like population, which is included, will play a part. A standard measurement for deaths is number of deaths per 100,000 people, and while there is generally more that goes into the calculation of this metric, we can use a simple version here by dividing `gun_deaths` by `population` and multiplying by 100,000. Again, while we are under the hood, we make change the `state` variable to lower case, which will again help when we merge to our map data, and we change the `geo_region` variable to a factor, which helps with visualizations later on.
-
-```{r}
-# new column with gun deaths per 100,000 in population
-# lower case state names for later merge for visualization
-#region as a factor variable
-d2 <- d1 %>% mutate(
-  dpp = gun_deaths / population * 100000,
-  state = tolower(state),
-  geo_region = as.factor(geo_region)
-)
-```
-
-As a quick check for outliers and to make sure the previous mutates worked as expected, we can take the top 10 values from the dataset, ordered in descending order by `dpp`. We find one in District of Columbia, which is more than double the next highest value in deaths per 100,000 people. Given its generally lower population (though worth noting, not lowest), and its unique status of not being a state, it seems a little unfair to compare states to it. I made the decision to exclude it here.
-
-```{r}
-d2 %>% arrange(-dpp) %>% head(10)
-d2 <- d2 %>% filter(dpp!=max(dpp))
-```
-
-A few last odds and ends before we go into visualizations, here we use the map_data function to get a dataset of map location and shape information. This is important for the choropleth map we make momentarily.
-
-```{r}
-#creating a map dataframe for states
-states <- map_data('state')
-```
-
-Once we have our map dataset, we can merge it to the gun deaths dataset. We merge by the field `region` in the map dataset, which was the lower-case state name, and the `state` field in the gun deaths dataset. This is why we needed the state name to be lower case in our main data, and also why we could not have a field named `region` to identify the geographic region and not the state. The order function at the end is to ensure the shape data for each state is in the correct order to be drawn later.
-
-```{r}
-choro <- merge(states, d2, sort=FALSE, by.x = 'region', by.y = 'state')
-choro <- choro[order(choro$order),]
-```
-
-The geographic region is the broadest of our categorical variables, so I wanted to start here. This code summarizes the variables of interest by summing up the respective region groups, with the exception of dpp which would need to be recalculated to roll up to this level. We see the differences are not too large, with the exception of the South which is generally larger in all three variables over the other regions.
-
-```{r}
-#summarizing by geo_region
-gun_region <- d2 %>% 
-  group_by(geo_region) %>%
-  summarize(
-    tot_gun = sum(gun_deaths),
-    population = sum(population),
-    dpp = sum(gun_deaths)/sum(population) * 100000
-  ) %>% as.data.frame() %>% arrange(-tot_gun)
-head(gun_region) # df only four rows, but head() used in case something blew up somehow
-```
-
-We visualize the above gun_deaths information here for the sake of consumption.
-
-```{r}
-# bar chart of regions
-gun_region %>% ggplot(aes(x=fct_reorder(geo_region,-tot_gun), y=tot_gun)) +
-  geom_bar(stat = 'identity') +
-  labs(title = 'Count of US Gun Deaths by Geographic Region', x = 'Geographic Region', y = 'Gun Deaths')
-```
-
-The choropleth map here gives us an idea of the number of deaths by state in order to help identify any particular regions or locations that are more dangerous than others. However this plot could almost serve as a proxy for population, because the most populous states generally have the most gun deaths. geom_polygon was used along with the merged map data, and gun_deaths was used as the fill to highlight states with more gun deaths than others.
-
-```{r}
-# ggplot and geom_polygon for chorpleth map, using gun_deaths
-ggplot(choro, aes(long, lat)) +
-  geom_polygon(aes(group = group, fill = gun_deaths), color = 'white') +
-  coord_map('albers', lat0 = 45.5, lat1=29.5) + 
-  labs(title = 'Total US Gun Deaths', x = '', y = '') +
-  scale_fill_continuous(name = 'Number of \nGun Deaths') # legend title
-```
-
-To remedy the last plots being obscured by the population, we can use the `dpp` variable we created instead of gun_deaths. Now we have generally better demarcation of states with more gun deaths. Still, it has not told us too much that is new. We see some states that stand out as being higher, and generally the Northern parts of the West are low. However, this begs the question, are gun deaths just as bad everywhere, except a few states? Put simply, do gun deaths happen more often in some states solely because of population, do more gun deaths in a state lead to more deaths per person?
-
-```{r}
-# ggplot and geom_polygon for chorpleth map, using dpp
-ggplot(choro, aes(long, lat)) +
-  geom_polygon(aes(group = group, fill = dpp), color = 'white') +
-  coord_map('albers', lat0 = 45.5, lat1=29.5) +
-  labs(title = 'US Gun Deaths per 100,000 People', x = '', y = '') + 
-  scale_fill_continuous(name = 'Deaths \nper 100,000')
-```
-
-Backing up a bit, here we plot gun deaths against population, and a clear linear trend exists, though that may be emphasized by California in the top right. Thus far it appears to be that population is the major factor, but if this is true then if we plot deaths per person against gun deaths there should be no slope, because as gun deaths increase, population would also be increasing at a constant rate. For this and subsequent charts, geom point is used, with each region marked by different colored points, with the intention of seeing if there is any clustering going on.
-
-```{r}
-d2 %>% ggplot(aes(x=population, y=gun_deaths, color = geo_region)) + 
-  geom_point() +
-  labs(title = 'US Gun Deaths vs Population', x = 'Population', y = 'Gun Deaths')
-```
-
-Here we see the trend become much less apparent. It appears that deaths per 100,000 increases with the number of deaths at first, but then we get several observations where the trend seems to dissipate. However Deaths per 100,000 people is a much smaller scale than gun_deaths, so some additional transformations may bring us some clarity here.
-
-```{r}
-d2 %>% ggplot(aes(x=gun_deaths, y=dpp, color = geo_region)) + 
-  geom_point() +
-  labs(title = 'Gun Deaths per 100,000 People vs Count of Gun Deaths', x = 'Gun Deaths', y = 'Deaths per 100,000 People')
-```
-
-This plot is the same as the last one, but with a log base 2 scale for the count of gun deaths, to help with the disparity between the two variables. Our trend is much clearer now, which would suggest that gun deaths do not only increase with population. We can use some statistical methods to determine if the relationship is significant or not. `scale_x_continuous()` was used to transform the previous plot into a log base two scale. Additionally, bquote was used to get a subscript '2' in the x-axis title.
-
-```{r}
-d2 %>% ggplot(aes(x=gun_deaths, y=dpp, color = geo_region)) + 
-  geom_point() +
-  scale_x_continuous(trans = 'log2') +
-  labs(title = 'Gun Deaths per 100,000 People vs Count of Gun Deaths', y = 'Deaths per 100,000 People',
-  x = bquote('Gun Deaths log'[2]))
-```
-
-From here we have fit three linear models. The first of which is a baseline of sorts, fitting gun deaths as a function of population, and geographical region.
-
-```{r}
-fit3 <- lm(gun_deaths ~ population + geo_region, data = d2) # lm fits the model
-summary(fit3) # summary gives us the results
-```
-
-We can see the results are statistically significant. That is to say, we would reject the null hypothesis that there is no linear relationship between population and geographical region (specifically if the state is a southern state), and the number of gun deaths. This is to be expected, the question ultimately is whether larger gun deaths in one state versus another can be dismissed as a result of differences in population. Population effects the overall count, but frequency per person still must be observed.
-
-Here we fit a model for deaths per 100,000 people as a function of gun deaths and geographical region. Note the transformation taken for gun deaths was only applied to the one variable.
-
-```{r}
-fit4 <- lm(dpp ~ log2(gun_deaths) + geo_region, data = d2) # log2 only taken on gun_deaths
-summary(fit4)
-```
-
-Again we see statistically significant results, so we would reject the null hypothesis that there is no linear relationship between the log base 2 of gun deaths and geographical region, and gun deaths per 100,000 people. It is worth noting the Adjusted R Square is .5857, meaning 58.57% of the variance is explained by this model. The last model had a better R-square, but again that is to be expected, and we will see in a moment that population explains less variance in the rate than the count of gun deaths does.
-
-Our last model is a sanity check of sorts, but we fit deaths per 100,000 people against the log base 2 of the population. We do this to determine if this relationship exists and to see how much variance it explains compared to the last model.
-
-```{r}
-fit5 <- lm(dpp ~ log2(population) + geo_region, data = d2)
-summary(fit5)
-```
-
-We still see statistically significant results, so we would still reject the null hypothesis that there is no linear relationship between the log base 2 of population and geographical region, and deaths per 100,000 people. However, we can see there is an adjusted R-Square of 0.3645, so only 36.45% of the variance is explained by this model. While there is a significant amount of variation explained here, more variation is explained by the count of gun deaths than population. With this, it would be safe to say that a larger number of gun deaths in a state is not just a result of a larger population, and would likely lead to a larger rate of gun deaths overall.
+Finally we can instead reinterpret the tokenization process to consider ngrams of 3-words rather than individual words. We've limited the above word cloud to only 200 ngram combinations, but it's clear to see that some iconic onomatopeias still stand as a lasting linguistic legacy for the band.

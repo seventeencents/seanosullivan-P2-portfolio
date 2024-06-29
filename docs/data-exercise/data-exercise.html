@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Sean O’Sullivan’s Data Portfolio - R Coding Exercise</title>
+<title>Sean O’Sullivan’s Data Portfolio - Complex Data Exercise</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -100,6 +100,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="../site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="../site_libs/wordcloud2-0.0.1/wordcloud.css" rel="stylesheet">
+<script src="../site_libs/wordcloud2-0.0.1/wordcloud2-all.js"></script>
+<script src="../site_libs/wordcloud2-0.0.1/hover.js"></script>
+<script src="../site_libs/wordcloud2-binding-0.2.2/wordcloud2.js"></script>
 
 
 <link rel="stylesheet" href="../styles.css">
@@ -177,7 +182,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">R Coding Exercise</h1>
+<h1 class="title">Complex Data Exercise</h1>
 </div>
 
 
@@ -194,636 +199,316 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<section id="introduction-and-setup" class="level1">
+<h1>Introduction and Setup</h1>
+<p>For this exercise we’re going to examine some raw text data in the form of song lyrics. Specifically we’re going to be taking a look at the lyrics of the band blink-182 (which I had the pleasure of seeing on 6/24/24) and examining the sentiment and word choice of their lyrics across years, albums, and songs. The lyric data has been sourced from the website Genius – which allows both artists and fans alike to crowd source song lyrics. As a result some minor stylistic differences between songs may be present.</p>
+<p><img src="../data-exercise/blink.jpg" class="img-fluid"></p>
+<section id="data-import-and-type-conversions" class="level2">
+<h2 class="anchored" data-anchor-id="data-import-and-type-conversions">Data Import and Type Conversions</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load and install necessary packages for notebook</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(dslabs,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               ggplot2,</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               ggthemes,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               skimr,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>               tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               tidytext,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               textdata,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               tidyverse,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>               wordcloud2)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># read in dataframe and fix date, album, and track number columns</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>blink_df <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data-exercise/data/raw-data/blink-lyrics.csv"</span>),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                     <span class="at">col_names =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                     <span class="at">show_col_types =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="at">ReleaseDate =</span> <span class="fu">mdy</span>(ReleaseDate),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                   <span class="at">TrackNumber =</span> <span class="fu">as.factor</span>(TrackNumber),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                   <span class="at">Album =</span> <span class="fu">factor</span>(Album,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Cheshire Cat"</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Dude Ranch"</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Enema of the State"</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Take Off Your Pants and Jacket"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"blink-182"</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Neighborhoods"</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"California"</span>, </span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Nine"</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"One More Time…"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="tokenizing-lyrics-by-album-and-joining-sentiment-data" class="level2">
+<h2 class="anchored" data-anchor-id="tokenizing-lyrics-by-album-and-joining-sentiment-data">Tokenizing Lyrics by Album and Joining Sentiment Data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># look at help file for gapminder</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">help</span>(gapminder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tokenizing lyrics and joining sentiment values and classifications</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># collect counts by album</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>album_sentiments <span class="ot">&lt;-</span> blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">mutate</span>(<span class="at">class =</span> <span class="fu">case_when</span>(value <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"negative"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                              value <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"positive"</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">.default =</span> <span class="st">"neutral"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">count</span>(Album, class, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> class, <span class="at">values_from =</span> n)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># tokenizing lyrics and collecting total non-stopwords by album</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>album_total_words <span class="ot">&lt;-</span> blink_df <span class="sc">%&gt;%</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>               <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>               <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>               <span class="fu">count</span>(Album, word) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>               <span class="fu">summarize</span>(<span class="at">total =</span> <span class="fu">sum</span>(n), <span class="at">.by =</span> Album)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># joining sentiment word counts with total word counts by album</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#creating positivity/negative ratios per album</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>album_ratios <span class="ot">&lt;-</span> album_sentiments <span class="sc">%&gt;%</span> </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">inner_join</span>(album_total_words, <span class="fu">join_by</span>(Album)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">mutate</span>(<span class="at">positivity =</span> positive<span class="sc">/</span>total,</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                         <span class="at">negativity =</span> negative<span class="sc">/</span>total)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="tokenizing-lyrics-by-song-and-joining-sentiment-data" class="level2">
+<h2 class="anchored" data-anchor-id="tokenizing-lyrics-by-song-and-joining-sentiment-data">Tokenizing Lyrics by Song and Joining Sentiment Data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get an overview of the data</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(gapminder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   10545 obs. of  9 variables:
- $ country         : Factor w/ 185 levels "Albania","Algeria",..: 1 2 3 4 5 6 7 8 9 10 ...
- $ year            : int  1960 1960 1960 1960 1960 1960 1960 1960 1960 1960 ...
- $ infant_mortality: num  115.4 148.2 208 NA 59.9 ...
- $ life_expectancy : num  62.9 47.5 36 63 65.4 ...
- $ fertility       : num  6.19 7.65 7.32 4.43 3.11 4.55 4.82 3.45 2.7 5.57 ...
- $ population      : num  1636054 11124892 5270844 54681 20619075 ...
- $ gdp             : num  NA 1.38e+10 NA NA 1.08e+11 ...
- $ continent       : Factor w/ 5 levels "Africa","Americas",..: 4 1 1 2 2 3 2 5 4 3 ...
- $ region          : Factor w/ 22 levels "Australia and New Zealand",..: 19 11 10 2 15 21 2 1 22 21 ...</code></pre>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tokenizing lyrics and joining sentiment values and classifications</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># collect counts by song</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>song_sentiments <span class="ot">&lt;-</span> blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">mutate</span>(<span class="at">class =</span> <span class="fu">case_when</span>(value <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"negative"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                                              value <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"positive"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">.default =</span> <span class="st">"neutral"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">count</span>(Album, SongName, TrackNumber, class, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> class, <span class="at">values_from =</span> n, <span class="at">values_fill =</span> <span class="dv">0</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># tokenizing lyrics and collecting total non-stopwords by song</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>song_total_words <span class="ot">&lt;-</span> blink_df <span class="sc">%&gt;%</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>               <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>               <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>               <span class="fu">count</span>(Album, SongName, word) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>               <span class="fu">group_by</span>(Album, SongName) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>               <span class="fu">summarize</span>(<span class="at">total =</span> <span class="fu">sum</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'Album'. You can override using the
+`.groups` argument.</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># joining sentiment word counts with total word counts by song</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># creating positivity/negative ratios per song</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>song_neg_pos <span class="ot">&lt;-</span> song_sentiments <span class="sc">%&gt;%</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">inner_join</span>(song_total_words, <span class="fu">join_by</span>(SongName)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mutate</span>(<span class="at">positivity =</span> positive<span class="sc">/</span>total,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">negativity =</span> negative<span class="sc">/</span>total,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                         <span class="at">Album =</span> Album.x) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">select</span>(Album, SongName, TrackNumber, negativity, positivity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+</section>
+<section id="exploring-and-visualizing-the-data" class="level1">
+<h1>Exploring and Visualizing the Data</h1>
+<section id="sentiment-over-time" class="level2">
+<h2 class="anchored" data-anchor-id="sentiment-over-time">Sentiment Over Time</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get a summary of the data</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gapminder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                country           year      infant_mortality life_expectancy
- Albania            :   57   Min.   :1960   Min.   :  1.50   Min.   :13.20  
- Algeria            :   57   1st Qu.:1974   1st Qu.: 16.00   1st Qu.:57.50  
- Angola             :   57   Median :1988   Median : 41.50   Median :67.54  
- Antigua and Barbuda:   57   Mean   :1988   Mean   : 55.31   Mean   :64.81  
- Argentina          :   57   3rd Qu.:2002   3rd Qu.: 85.10   3rd Qu.:73.00  
- Armenia            :   57   Max.   :2016   Max.   :276.90   Max.   :83.90  
- (Other)            :10203                  NA's   :1453                    
-   fertility       population             gdp               continent   
- Min.   :0.840   Min.   :3.124e+04   Min.   :4.040e+07   Africa  :2907  
- 1st Qu.:2.200   1st Qu.:1.333e+06   1st Qu.:1.846e+09   Americas:2052  
- Median :3.750   Median :5.009e+06   Median :7.794e+09   Asia    :2679  
- Mean   :4.084   Mean   :2.701e+07   Mean   :1.480e+11   Europe  :2223  
- 3rd Qu.:6.000   3rd Qu.:1.523e+07   3rd Qu.:5.540e+10   Oceania : 684  
- Max.   :9.220   Max.   :1.376e+09   Max.   :1.174e+13                  
- NA's   :187     NA's   :185         NA's   :2972                       
-             region    
- Western Asia   :1026  
- Eastern Africa : 912  
- Western Africa : 912  
- Caribbean      : 741  
- South America  : 684  
- Southern Europe: 684  
- (Other)        :5586  </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># determine gapminder object type</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(gapminder)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "data.frame"</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create an African data only subset</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>africandata <span class="ot">&lt;-</span> gapminder <span class="sc">%&gt;%</span> <span class="fu">filter</span>(continent <span class="sc">==</span> <span class="st">"Africa"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(africandata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   2907 obs. of  9 variables:
- $ country         : Factor w/ 185 levels "Albania","Algeria",..: 2 3 18 22 26 27 29 31 32 33 ...
- $ year            : int  1960 1960 1960 1960 1960 1960 1960 1960 1960 1960 ...
- $ infant_mortality: num  148 208 187 116 161 ...
- $ life_expectancy : num  47.5 36 38.3 50.3 35.2 ...
- $ fertility       : num  7.65 7.32 6.28 6.62 6.29 6.95 5.65 6.89 5.84 6.25 ...
- $ population      : num  11124892 5270844 2431620 524029 4829291 ...
- $ gdp             : num  1.38e+10 NA 6.22e+08 1.24e+08 5.97e+08 ...
- $ continent       : Factor w/ 5 levels "Africa","Americas",..: 1 1 1 1 1 1 1 1 1 1 ...
- $ region          : Factor w/ 22 levels "Australia and New Zealand",..: 11 10 20 17 20 5 10 20 10 10 ...</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(africandata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>         country          year      infant_mortality life_expectancy
- Algeria     :  57   Min.   :1960   Min.   : 11.40   Min.   :13.20  
- Angola      :  57   1st Qu.:1974   1st Qu.: 62.20   1st Qu.:48.23  
- Benin       :  57   Median :1988   Median : 93.40   Median :53.98  
- Botswana    :  57   Mean   :1988   Mean   : 95.12   Mean   :54.38  
- Burkina Faso:  57   3rd Qu.:2002   3rd Qu.:124.70   3rd Qu.:60.10  
- Burundi     :  57   Max.   :2016   Max.   :237.40   Max.   :77.60  
- (Other)     :2565                  NA's   :226                     
-   fertility       population             gdp               continent   
- Min.   :1.500   Min.   :    41538   Min.   :4.659e+07   Africa  :2907  
- 1st Qu.:5.160   1st Qu.:  1605232   1st Qu.:8.373e+08   Americas:   0  
- Median :6.160   Median :  5570982   Median :2.448e+09   Asia    :   0  
- Mean   :5.851   Mean   : 12235961   Mean   :9.346e+09   Europe  :   0  
- 3rd Qu.:6.860   3rd Qu.: 13888152   3rd Qu.:6.552e+09   Oceania :   0  
- Max.   :8.450   Max.   :182201962   Max.   :1.935e+11                  
- NA's   :51      NA's   :51          NA's   :637                        
-                       region   
- Eastern Africa           :912  
- Western Africa           :912  
- Middle Africa            :456  
- Northern Africa          :342  
- Southern Africa          :285  
- Australia and New Zealand:  0  
- (Other)                  :  0  </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create mortality and life expectancy subset dataframe</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>mortexp <span class="ot">&lt;-</span> africandata <span class="sc">%&gt;%</span> <span class="fu">select</span>(infant_mortality, life_expectancy)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(mortexp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   2907 obs. of  2 variables:
- $ infant_mortality: num  148 208 187 116 161 ...
- $ life_expectancy : num  47.5 36 38.3 50.3 35.2 ...</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mortexp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> infant_mortality life_expectancy
- Min.   : 11.40   Min.   :13.20  
- 1st Qu.: 62.20   1st Qu.:48.23  
- Median : 93.40   Median :53.98  
- Mean   : 95.12   Mean   :54.38  
- 3rd Qu.:124.70   3rd Qu.:60.10  
- Max.   :237.40   Max.   :77.60  
- NA's   :226                     </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create population and life expectancy subset dataframe</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>popexp <span class="ot">&lt;-</span> africandata <span class="sc">%&gt;%</span> <span class="fu">select</span>(population, life_expectancy)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(popexp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   2907 obs. of  2 variables:
- $ population     : num  11124892 5270844 2431620 524029 4829291 ...
- $ life_expectancy: num  47.5 36 38.3 50.3 35.2 ...</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(popexp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   population        life_expectancy
- Min.   :    41538   Min.   :13.20  
- 1st Qu.:  1605232   1st Qu.:48.23  
- Median :  5570982   Median :53.98  
- Mean   : 12235961   Mean   :54.38  
- 3rd Qu.: 13888152   3rd Qu.:60.10  
- Max.   :182201962   Max.   :77.60  
- NA's   :51                         </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a plot of infant mortality and life expectancy</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>mortexp <span class="sc">%&gt;%</span> </span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> infant_mortality, <span class="at">y =</span> life_expectancy)) <span class="sc">+</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="st">"coral2"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Infant Mortality Rate"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Life Expectancy"</span>) <span class="sc">+</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot positivity and negativity throughout the years</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Album, ReleaseDate) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">ReleaseDate =</span> <span class="fu">max</span>(ReleaseDate), <span class="at">.by =</span> Album) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># rejoin with original dataframe for release years</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(album_ratios, <span class="fu">join_by</span>(Album)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">selftitled =</span> <span class="fu">as.factor</span>(<span class="fu">case_when</span>(Album <span class="sc">==</span> <span class="st">"blink-182"</span> <span class="sc">~</span> <span class="st">"yes"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                                <span class="at">.default =</span> <span class="st">"no"</span>))) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>positive, <span class="sc">-</span>negative, <span class="sc">-</span>total) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="dv">3</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"type"</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> ReleaseDate, <span class="at">y =</span> value, <span class="at">colour =</span> type)) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> selftitled), <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="dv">20</span>, <span class="dv">18</span>)) <span class="sc">+</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> </span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>type, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_limits</span>(<span class="at">y =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent, ) <span class="sc">+</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_date</span>(<span class="at">date_breaks =</span> <span class="st">"2 years"</span>, <span class="at">date_labels =</span> <span class="st">"'%y"</span>) <span class="sc">+</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"deeppink1"</span>, <span class="st">"aquamarine2"</span>)) <span class="sc">+</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Release Year"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Blink-182 Sentiment Through The Years"</span>) <span class="sc">+</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">20</span>),</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="data-exercise_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+<p>Examining the lyrical sentiment of blink-182 over the years there is a clear bias towards more negative sentiment throughout the entirety of their career. Looking a little more closely we’ll notice that their self-title album (highlighted with a diamond data point) represented their most negative record by a significant amount while also being among one of their least positive albums. It’s also worth noting the historical context of the period, as this would also be their first full album following the terror attacks of 9/11. Subsequent releases in later years would be substantially less negative.</p>
+</section>
+<section id="top-songs-by-negativity" class="level2">
+<h2 class="anchored" data-anchor-id="top-songs-by-negativity">Top Songs by Negativity</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a plot of population and life expectancy</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>popexp <span class="sc">%&gt;%</span> </span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> population, <span class="at">y =</span> life_expectancy)) <span class="sc">+</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">color =</span> <span class="st">"coral2"</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Population"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Life Expectancy"</span>) <span class="sc">+</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">"log"</span>) <span class="sc">+</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot top negative songs color coded by album</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>song_neg_pos <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(SongName, Album, negativity) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(negativity, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(negativity, <span class="fu">reorder</span>(SongName, negativity), <span class="at">fill =</span> Album)) <span class="sc">+</span> </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span> </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_discrete</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"firebrick2"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"cyan3"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"gold"</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"aquamarine2"</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"deeppink1"</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"grey10"</span>)) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Negativity"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Most Negative Songs"</span>) <span class="sc">+</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="sc">-</span><span class="fl">0.35</span>, <span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">20</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="data-exercise_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>Looking at the above plots we can observe nearly linearly connected streaks in the data which corresponds with the autocorrelative nature of the annual data found in our original dataset.</p>
+<p>Given what was previously seen with the time series data it comes as no surprise that 3 of the top 10 songs by negativity throughout blink-182’s career were featured on their self-title album. All 3 of which are among the top 4 most negative songs across all records.</p>
+</section>
+<section id="examining-negativity-journeys-within-albums" class="level2">
+<h2 class="anchored" data-anchor-id="examining-negativity-journeys-within-albums">Examining Negativity Journeys Within Albums</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># examine a subset dataframe that only contains missing infant mortality rows</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(africandata <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">is.na</span>(infant_mortality)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>              country         year      infant_mortality life_expectancy
- Equatorial Guinea: 23   Min.   :1960   Min.   : NA      Min.   :35.71  
- Angola           : 19   1st Qu.:1963   1st Qu.: NA      1st Qu.:42.07  
- Gabon            : 19   Median :1968   Median : NA      Median :46.02  
- Djibouti         : 17   Mean   :1978   Mean   :NaN      Mean   :48.92  
- Guinea-Bissau    : 17   3rd Qu.:1978   3rd Qu.: NA      3rd Qu.:52.70  
- South Africa     : 15   Max.   :2016   Max.   : NA      Max.   :77.60  
- (Other)          :116                  NA's   :226                     
-   fertility       population            gdp               continent  
- Min.   :4.380   Min.   :   83636   Min.   :9.997e+07   Africa  :226  
- 1st Qu.:5.680   1st Qu.:  257709   1st Qu.:1.019e+09   Americas:  0  
- Median :6.360   Median :  686155   Median :1.899e+09   Asia    :  0  
- Mean   :6.306   Mean   : 4935222   Mean   :1.373e+10   Europe  :  0  
- 3rd Qu.:6.945   3rd Qu.: 5814296   3rd Qu.:5.942e+09   Oceania :  0  
- Max.   :7.430   Max.   :46144154   Max.   :7.600e+10                 
- NA's   :51      NA's   :51         NA's   :159                       
-                       region  
- Middle Africa            :83  
- Eastern Africa           :62  
- Western Africa           :50  
- Southern Africa          :25  
- Northern Africa          : 6  
- Australia and New Zealand: 0  
- (Other)                  : 0  </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create subset of African data for the year 2000</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>africandata2000 <span class="ot">&lt;-</span> africandata <span class="sc">%&gt;%</span> <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">2000</span>)</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(africandata2000)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   51 obs. of  9 variables:
- $ country         : Factor w/ 185 levels "Albania","Algeria",..: 2 3 18 22 26 27 29 31 32 33 ...
- $ year            : int  2000 2000 2000 2000 2000 2000 2000 2000 2000 2000 ...
- $ infant_mortality: num  33.9 128.3 89.3 52.4 96.2 ...
- $ life_expectancy : num  73.3 52.3 57.2 47.6 52.6 46.7 54.3 68.4 45.3 51.5 ...
- $ fertility       : num  2.51 6.84 5.98 3.41 6.59 7.06 5.62 3.7 5.45 7.35 ...
- $ population      : num  31183658 15058638 6949366 1736579 11607944 ...
- $ gdp             : num  5.48e+10 9.13e+09 2.25e+09 5.63e+09 2.61e+09 ...
- $ continent       : Factor w/ 5 levels "Africa","Americas",..: 1 1 1 1 1 1 1 1 1 1 ...
- $ region          : Factor w/ 22 levels "Australia and New Zealand",..: 11 10 20 17 20 5 10 20 10 10 ...</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(africandata2000)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>         country        year      infant_mortality life_expectancy
- Algeria     : 1   Min.   :2000   Min.   : 12.30   Min.   :37.60  
- Angola      : 1   1st Qu.:2000   1st Qu.: 60.80   1st Qu.:51.75  
- Benin       : 1   Median :2000   Median : 80.30   Median :54.30  
- Botswana    : 1   Mean   :2000   Mean   : 78.93   Mean   :56.36  
- Burkina Faso: 1   3rd Qu.:2000   3rd Qu.:103.30   3rd Qu.:60.00  
- Burundi     : 1   Max.   :2000   Max.   :143.30   Max.   :75.00  
- (Other)     :45                                                  
-   fertility       population             gdp               continent 
- Min.   :1.990   Min.   :    81154   Min.   :2.019e+08   Africa  :51  
- 1st Qu.:4.150   1st Qu.:  2304687   1st Qu.:1.274e+09   Americas: 0  
- Median :5.550   Median :  8799165   Median :3.238e+09   Asia    : 0  
- Mean   :5.156   Mean   : 15659800   Mean   :1.155e+10   Europe  : 0  
- 3rd Qu.:5.960   3rd Qu.: 17391242   3rd Qu.:8.654e+09   Oceania : 0  
- Max.   :7.730   Max.   :122876723   Max.   :1.329e+11                
-                                                                      
-                       region  
- Eastern Africa           :16  
- Western Africa           :16  
- Middle Africa            : 8  
- Northern Africa          : 6  
- Southern Africa          : 5  
- Australia and New Zealand: 0  
- (Other)                  : 0  </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a plot of infant mortality and life expectancy for 2000</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>africandata2000 <span class="sc">%&gt;%</span> </span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> infant_mortality, <span class="at">y =</span> life_expectancy)) <span class="sc">+</span></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.65</span>, <span class="at">color =</span> <span class="st">"coral2"</span>) <span class="sc">+</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> y <span class="sc">~</span> x, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"slategrey"</span>) <span class="sc">+</span></span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Infant Mortality Rate"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Life Expectancy"</span>) <span class="sc">+</span></span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot negativity progress through each album by song</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>song_neg_pos <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(TrackNumber, negativity, <span class="at">fill =</span> Album)) <span class="sc">+</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>Album, <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">scales =</span> <span class="st">"free_x"</span>) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>percent) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Track Number"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Negativity"</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_discrete</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"burlywood4"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"firebrick2"</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"cyan3"</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"gold"</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"aquamarine2"</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"grey35"</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"chocolate1"</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"deeppink1"</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"grey10"</span>)) <span class="sc">+</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Negativity Across Track Numbers"</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"While most records peak in the middle, EotS and Neighborhoods buck the trend"</span>) <span class="sc">+</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">20</span>),</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a plot of population and life expectancy for 2000</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>africandata2000 <span class="sc">%&gt;%</span> </span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> population, <span class="at">y =</span> life_expectancy)) <span class="sc">+</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.65</span>, <span class="at">color =</span> <span class="st">"coral2"</span>) <span class="sc">+</span></span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Population"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Life Expectancy"</span>) <span class="sc">+</span></span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">"log"</span>) <span class="sc">+</span></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="data-exercise_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>When we examine a single year (in this case the year <code>2000</code>) we observe that there is a negative relationship between infant mortality rate and life expectancy.</p>
+<p>With track listing orders we can plot the negativity journeys within each major record release. In general we can see a trend towards burying peak negativity in the middle of the record. Dude Ranch, blink-182, and Nine all demonstrate this well. With songs like Enthused, The Fallen Interlude, and I Really Wish I Hated You all peaking towards the middle of the track list. Even lesser negative albums like Cheshire Cat and California feature their most negative tracks (Does My Breath Smell? and Home is Such a Lonely Place, respectively) at track number 8.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit linear model of life expectancy as a function of infant mortality</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(life_expectancy <span class="sc">~</span> infant_mortality, <span class="at">data =</span> africandata2000)</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = life_expectancy ~ infant_mortality, data = africandata2000)
-
-Residuals:
-     Min       1Q   Median       3Q      Max 
--22.6651  -3.7087   0.9914   4.0408   8.6817 
-
-Coefficients:
-                 Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)      71.29331    2.42611  29.386  &lt; 2e-16 ***
-infant_mortality -0.18916    0.02869  -6.594 2.83e-08 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 6.221 on 49 degrees of freedom
-Multiple R-squared:  0.4701,    Adjusted R-squared:  0.4593 
-F-statistic: 43.48 on 1 and 49 DF,  p-value: 2.826e-08</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># fit linear model of life expectancy as a function of population</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(life_expectancy <span class="sc">~</span> population, <span class="at">data =</span> africandata2000)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = life_expectancy ~ population, data = africandata2000)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--18.429  -4.602  -2.568   3.800  18.802 
-
-Coefficients:
-             Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept) 5.593e+01  1.468e+00  38.097   &lt;2e-16 ***
-population  2.756e-08  5.459e-08   0.505    0.616    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 8.524 on 49 degrees of freedom
-Multiple R-squared:  0.005176,  Adjusted R-squared:  -0.01513 
-F-statistic: 0.2549 on 1 and 49 DF,  p-value: 0.6159</code></pre>
-</div>
-</div>
-<p>Based on linear models fit against both population and infant mortality we can see that we have a statistically significant relationship between infant mortality and life expectancy, but no such similarly significant relationship with population. The former relationship makes intuitive sense – the more deaths as an infant the more downwardly skewed you would expect the life expectancy of that country.</p>
-<section id="this-section-contributed-by-william-hyltin" class="level3">
-<h3 class="anchored" data-anchor-id="this-section-contributed-by-william-hyltin">This section contributed by William Hyltin</h3>
-<p>For this part of the exercise we will look at the “murders” dataset, which contains gun murder data from FBI report from the year 2010.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#importing two more packages to help with choropleth plot later</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(maps,</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>               mapproj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Observing the help file to understand the variables in the dataset.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">help</span>(murders)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Understanding the structure of the data.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(murders)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'data.frame':   51 obs. of  5 variables:
- $ state     : chr  "Alabama" "Alaska" "Arizona" "Arkansas" ...
- $ abb       : chr  "AL" "AK" "AZ" "AR" ...
- $ region    : Factor w/ 4 levels "Northeast","South",..: 2 4 4 2 4 4 1 2 2 2 ...
- $ population: num  4779736 710231 6392017 2915918 37253956 ...
- $ total     : num  135 19 232 93 1257 ...</code></pre>
-</div>
-</div>
-<p>Understanding the distribution and basics stats of the variables in the dataset.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(murders)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>    state               abb                      region     population      
- Length:51          Length:51          Northeast    : 9   Min.   :  563626  
- Class :character   Class :character   South        :17   1st Qu.: 1696962  
- Mode  :character   Mode  :character   North Central:12   Median : 4339367  
-                                       West         :13   Mean   : 6075769  
-                                                          3rd Qu.: 6636084  
-                                                          Max.   :37253956  
-     total       
- Min.   :   2.0  
- 1st Qu.:  24.5  
- Median :  97.0  
- Mean   : 184.4  
- 3rd Qu.: 268.0  
- Max.   :1257.0  </code></pre>
-</div>
-</div>
-<p>Finally, confirming the data type is in fact a data frame.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(murders)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "data.frame"</code></pre>
-</div>
-</div>
-<p>The “total” is somewhat non-descriptive, so I rename the variable so that I don’t mistake it for population or some other representation of the data (e.g.&nbsp;the dataset is <em>gun</em> murder but there would be no way to tell that its gun murder from just the data or columns). Also, given the geographic nature of the data I will want to play with a choropleth map. The <code>maps</code> package I brought in earlier will have some conflicts with a column named “region,” so we rename it here while we’re under the hood.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># renaming "total" column and region column, because region column will have later conflicts</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> murders <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="at">gun_deaths =</span> total, <span class="at">geo_region =</span> region)</span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="co"># names function to get the names of the columns.</span></span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(d1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "state"      "abb"        "geo_region" "population" "gun_deaths"</code></pre>
-</div>
-</div>
-<p>Jumping ahead a bit, there are likely some problems with just using a count of gun deaths alone. factors like population, which is included, will play a part. A standard measurement for deaths is number of deaths per 100,000 people, and while there is generally more that goes into the calculation of this metric, we can use a simple version here by dividing <code>gun_deaths</code> by <code>population</code> and multiplying by 100,000. Again, while we are under the hood, we make change the <code>state</code> variable to lower case, which will again help when we merge to our map data, and we change the <code>geo_region</code> variable to a factor, which helps with visualizations later on.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># new column with gun deaths per 100,000 in population</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co"># lower case state names for later merge for visualization</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="co">#region as a factor variable</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> d1 <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(</span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dpp =</span> gun_deaths <span class="sc">/</span> population <span class="sc">*</span> <span class="dv">100000</span>,</span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">state =</span> <span class="fu">tolower</span>(state),</span>
-<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">geo_region =</span> <span class="fu">as.factor</span>(geo_region)</span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>As a quick check for outliers and to make sure the previous mutates worked as expected, we can take the top 10 values from the dataset, ordered in descending order by <code>dpp</code>. We find one in District of Columbia, which is more than double the next highest value in deaths per 100,000 people. Given its generally lower population (though worth noting, not lowest), and its unique status of not being a state, it seems a little unfair to compare states to it. I made the decision to exclude it here.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>d2 <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="sc">-</span>dpp) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                  state abb    geo_region population gun_deaths       dpp
-1  district of columbia  DC         South     601723         99 16.452753
-2             louisiana  LA         South    4533372        351  7.742581
-3              missouri  MO North Central    5988927        321  5.359892
-4              maryland  MD         South    5773552        293  5.074866
-5        south carolina  SC         South    4625364        207  4.475323
-6              delaware  DE         South     897934         38  4.231937
-7              michigan  MI North Central    9883640        413  4.178622
-8           mississippi  MS         South    2967297        120  4.044085
-9               georgia  GA         South    9920000        376  3.790323
-10              arizona  AZ          West    6392017        232  3.629527</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> d2 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(dpp<span class="sc">!=</span><span class="fu">max</span>(dpp))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>A few last odds and ends before we go into visualizations, here we use the map_data function to get a dataset of map location and shape information. This is important for the choropleth map we make momentarily.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#creating a map dataframe for states</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">map_data</span>(<span class="st">'state'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Once we have our map dataset, we can merge it to the gun deaths dataset. We merge by the field <code>region</code> in the map dataset, which was the lower-case state name, and the <code>state</code> field in the gun deaths dataset. This is why we needed the state name to be lower case in our main data, and also why we could not have a field named <code>region</code> to identify the geographic region and not the state. The order function at the end is to ensure the shape data for each state is in the correct order to be drawn later.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>choro <span class="ot">&lt;-</span> <span class="fu">merge</span>(states, d2, <span class="at">sort=</span><span class="cn">FALSE</span>, <span class="at">by.x =</span> <span class="st">'region'</span>, <span class="at">by.y =</span> <span class="st">'state'</span>)</span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>choro <span class="ot">&lt;-</span> choro[<span class="fu">order</span>(choro<span class="sc">$</span>order),]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The geographic region is the broadest of our categorical variables, so I wanted to start here. This code summarizes the variables of interest by summing up the respective region groups, with the exception of dpp which would need to be recalculated to roll up to this level. We see the differences are not too large, with the exception of the South which is generally larger in all three variables over the other regions.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#summarizing by geo_region</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>gun_region <span class="ot">&lt;-</span> d2 <span class="sc">%&gt;%</span> </span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(geo_region) <span class="sc">%&gt;%</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">tot_gun =</span> <span class="fu">sum</span>(gun_deaths),</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">population =</span> <span class="fu">sum</span>(population),</span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">dpp =</span> <span class="fu">sum</span>(gun_deaths)<span class="sc">/</span><span class="fu">sum</span>(population) <span class="sc">*</span> <span class="dv">100000</span></span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="sc">-</span>tot_gun)</span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(gun_region) <span class="co"># df only four rows, but head() used in case something blew up somehow</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>     geo_region tot_gun population      dpp
-1         South    4096  115072711 3.559489
-2          West    1911   71945553 2.656175
-3 North Central    1828   66927001 2.731334
-4     Northeast    1469   55317240 2.655592</code></pre>
-</div>
-</div>
-<p>We visualize the above gun_deaths information here for the sake of consumption.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bar chart of regions</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>gun_region <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span><span class="fu">fct_reorder</span>(geo_region,<span class="sc">-</span>tot_gun), <span class="at">y=</span>tot_gun)) <span class="sc">+</span></span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">'identity'</span>) <span class="sc">+</span></span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Count of US Gun Deaths by Geographic Region'</span>, <span class="at">x =</span> <span class="st">'Geographic Region'</span>, <span class="at">y =</span> <span class="st">'Gun Deaths'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create barcharts for negative word counts in middle track listings</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">class =</span> <span class="fu">case_when</span>(value <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"negative"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                           value <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"positive"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                           <span class="at">.default =</span> <span class="st">"neutral"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Album, SongName, word, class, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(class <span class="sc">==</span> <span class="st">"negative"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>class) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(SongName <span class="sc">==</span> <span class="st">"Enthused"</span> <span class="sc">|</span> </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         SongName <span class="sc">==</span> <span class="st">"Does My Breath Smell?"</span> <span class="sc">|</span> </span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>         SongName <span class="sc">==</span> <span class="st">"Home Is Such a Lonely Place"</span> <span class="sc">|</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>         SongName <span class="sc">==</span> <span class="st">"I Really Wish I Hated You"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">y =</span> n, <span class="at">x =</span> <span class="fu">reorder</span>(word, <span class="sc">-</span>n), <span class="at">fill =</span> Album)) <span class="sc">+</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>SongName, <span class="at">scales =</span> <span class="st">"free_x"</span>, <span class="at">ncol =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Words"</span>) <span class="sc">+</span> <span class="fu">ylab</span>(<span class="st">"Frequency"</span>) <span class="sc">+</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_discrete</span>(<span class="at">type =</span> <span class="fu">c</span>(<span class="st">"burlywood4"</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"firebrick2"</span>,</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"chocolate1"</span>,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"deeppink1"</span>)) <span class="sc">+</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>() <span class="sc">+</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="dv">20</span>),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">6</span>, <span class="at">angle =</span> <span class="dv">45</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="data-exercise_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The choropleth map here gives us an idea of the number of deaths by state in order to help identify any particular regions or locations that are more dangerous than others. However this plot could almost serve as a proxy for population, because the most populous states generally have the most gun deaths. geom_polygon was used along with the merged map data, and gun_deaths was used as the fill to highlight states with more gun deaths than others.</p>
+</section>
+<section id="word-clouds" class="level2">
+<h2 class="anchored" data-anchor-id="word-clouds">Word Clouds</h2>
+<p>While interactive word clouds aren’t the best option for visualizing with a great deal of intepretability and accuracy, they can be useful for surfacing a handful of the greatest values while being graphically pleasing and information dense.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggplot and geom_polygon for chorpleth map, using gun_deaths</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(choro, <span class="fu">aes</span>(long, lat)) <span class="sc">+</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_polygon</span>(<span class="fu">aes</span>(<span class="at">group =</span> group, <span class="at">fill =</span> gun_deaths), <span class="at">color =</span> <span class="st">'white'</span>) <span class="sc">+</span></span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_map</span>(<span class="st">'albers'</span>, <span class="at">lat0 =</span> <span class="fl">45.5</span>, <span class="at">lat1=</span><span class="fl">29.5</span>) <span class="sc">+</span> </span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Total US Gun Deaths'</span>, <span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">''</span>) <span class="sc">+</span></span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_continuous</span>(<span class="at">name =</span> <span class="st">'Number of </span><span class="sc">\n</span><span class="st">Gun Deaths'</span>) <span class="co"># legend title</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot negative word cloud</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">class =</span> <span class="fu">case_when</span>(value <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"negative"</span>,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                           value <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"positive"</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                           <span class="at">.default =</span> <span class="st">"neutral"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word, class, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(class <span class="sc">==</span> <span class="st">"negative"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>class) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(n, <span class="at">n =</span> <span class="dv">300</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with</span>(<span class="fu">wordcloud2</span>(<span class="at">data =</span> ., <span class="at">fontFamily =</span> <span class="st">"sans-serif"</span>, <span class="at">color =</span> <span class="st">"random-dark"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<div class="wordcloud2 html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-de1d660a812b1d759850" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-de1d660a812b1d759850">{"x":{"word":["lost","leave","bad","fuck","blame","miss","wrong","forget","fucking","broken","hard","hate","pain","stop","ass","fucked","kill","shit","waste","falling","dead","bomb","lonely","afraid","violence","pretend","scared","hell","sick","stuck","crazy","cut","die","empty","hated","hurts","stupid","fight","ghost","tragedy","death","fire","sad","fallen","nervous","numb","regret","swear","dumb","scream","tired","wasting","boring","dick","drown","lame","damn","disillusioned","fear","jerk","mess","terrified","torn","war","worst","admit","asshole","bored","drunk","excuse","forgotten","hurt","missed","mistake","stops","worried","abandon","bother","broke","destroyed","dread","drop","frustration","hating","haunted","losing","messed","mistakes","reckless","scary","shock","suck","sucks","tears","trouble","wasted","whore","worse","abandoned","abused","aggressions","attack","attacked","bastard","betray","blah","blind","block","confused","cruel","darkness","dirty","disappear","drag","escape","fail","failing","fake","hide","hiding","killed","loose","nuts","odd","offend","panic","shame","slavery","starved","stopped","strikes","ugly","unhealthy","useless","victims","ache","awkward","blurry","cock","complacent","crash","cried","cry","danger","defeated","dirt","evil","fool","hid","hurting","jealous","killing","kills","mad","pathetic","pay","poison","pretending","retarded","risk","strange","struggle","trapped","victim","worn","worthless","wreck","abduction","accident","anger","angry","anxious","apologize","avert","avoid","avoided","awful","bitch","bitter","bitterly","blamed","blaming","blocked","blocking","cheat","cheats","choke","confusing","contagious","crime","crying","curse","cuts","cutting","cynical","damage","damned","darkest","deceive","demand","denied","depressed","despair","destroy","died","disappointment","disaster","disguise","disgusting","distracted","doom","doubt","doubts","dragged","embarrass","failed","failure","flu","frightening","grave","harm","homesick","hopeless","hostile","ignore","lazy","lonesome","loser","loss","meaningless","misleading","missing","naive","offended","offending","passively","piss","pissed","pretends","prison","refuse","revenge","sadly","sappy","sarcastic","scare","screamed","screaming","shameful","shattered","shitty","shy","skeptic","sorrow","steal","strike","suffer","terrible","tits","tortured","treason","troubles","vague","warning","warnings","weird"],"freq":[80,61,48,42,40,40,39,36,36,32,30,26,26,24,21,21,21,21,21,19,17,16,16,15,15,14,14,13,13,13,12,12,12,12,12,12,12,11,11,11,10,10,10,9,9,9,9,9,8,8,8,8,7,7,7,7,6,6,6,6,6,6,6,6,6,5,5,5,5,5,5,5,5,5,5,5,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"fontFamily":"sans-serif","fontWeight":"bold","color":"random-dark","minSize":0,"weightFactor":2.25,"backgroundColor":"white","gridSize":0,"minRotation":-0.7853981633974483,"maxRotation":0.7853981633974483,"shuffle":true,"rotateRatio":0.4,"shape":"circle","ellipticity":0.65,"figBase64":null,"hover":null},"evals":[],"jsHooks":[]}</script>
 </div>
-</div>
-</div>
-<p>To remedy the last plots being obscured by the population, we can use the <code>dpp</code> variable we created instead of gun_deaths. Now we have generally better demarcation of states with more gun deaths. Still, it has not told us too much that is new. We see some states that stand out as being higher, and generally the Northern parts of the West are low. However, this begs the question, are gun deaths just as bad everywhere, except a few states? Put simply, do gun deaths happen more often in some states solely because of population, do more gun deaths in a state lead to more deaths per person?</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggplot and geom_polygon for chorpleth map, using dpp</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(choro, <span class="fu">aes</span>(long, lat)) <span class="sc">+</span></span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_polygon</span>(<span class="fu">aes</span>(<span class="at">group =</span> group, <span class="at">fill =</span> dpp), <span class="at">color =</span> <span class="st">'white'</span>) <span class="sc">+</span></span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_map</span>(<span class="st">'albers'</span>, <span class="at">lat0 =</span> <span class="fl">45.5</span>, <span class="at">lat1=</span><span class="fl">29.5</span>) <span class="sc">+</span></span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'US Gun Deaths per 100,000 People'</span>, <span class="at">x =</span> <span class="st">''</span>, <span class="at">y =</span> <span class="st">''</span>) <span class="sc">+</span> </span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_continuous</span>(<span class="at">name =</span> <span class="st">'Deaths </span><span class="sc">\n</span><span class="st">per 100,000'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot positive word cloud</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, Lyrics) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(stop_words, <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="fu">join_by</span>(word)) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">class =</span> <span class="fu">case_when</span>(value <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"negative"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                           value <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"positive"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                           <span class="at">.default =</span> <span class="st">"neutral"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word, class, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(class <span class="sc">==</span> <span class="st">"positive"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>class) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(n, <span class="at">n =</span> <span class="dv">300</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with</span>(<span class="fu">wordcloud2</span>(<span class="at">data =</span> ., <span class="at">size =</span> <span class="dv">2</span>, <span class="at">fontFamily =</span> <span class="st">"sans-serif"</span>, <span class="at">color =</span> <span class="st">"random-dark"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<div class="wordcloud2 html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-df1b4e6ed8462eae7242" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-df1b4e6ed8462eae7242">{"x":{"word":["love","yeah","care","save","happy","dream","fun","hope","fine","dreams","heaven","smile","kiss","chance","cool","feeling","laugh","favorite","god","strong","bright","honest","wishing","easy","growing","trust","alive","beautiful","forgive","likes","perfect","top","vision","free","sweet","win","loved","luck","promised","hopeful","impress","matters","reach","reached","straight","strength","true","clean","enjoy","fit","gain","haunting","jokes","laughed","stronger","survived","unstoppable","woo","amused","cares","celebrate","ease","laughing","laughs","matter","nice","pray","pretty","promise","safe","shared","treasure","worth","affection","brave","capable","comfort","commitment","convince","daring","dear","desire","exciting","fair","fame","focused","gift","granted","hero","hoping","importance","indestructible","jesus","opportunity","peace","progress","relaxed","restore","rich","safety","smart","smiling","solve","strongest","super","survivor","tender","winning","wishes","worthy"],"freq":[95,90,49,34,28,27,25,24,20,17,17,16,15,13,13,12,12,11,11,10,9,9,9,8,8,8,7,7,7,7,7,7,7,6,6,6,5,5,5,4,4,4,4,4,4,4,4,3,3,3,3,3,3,3,3,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],"fontFamily":"sans-serif","fontWeight":"bold","color":"random-dark","minSize":0,"weightFactor":3.789473684210526,"backgroundColor":"white","gridSize":0,"minRotation":-0.7853981633974483,"maxRotation":0.7853981633974483,"shuffle":true,"rotateRatio":0.4,"shape":"circle","ellipticity":0.65,"figBase64":null,"hover":null},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-</div>
-<p>Backing up a bit, here we plot gun deaths against population, and a clear linear trend exists, though that may be emphasized by California in the top right. Thus far it appears to be that population is the major factor, but if this is true then if we plot deaths per person against gun deaths there should be no slope, because as gun deaths increase, population would also be increasing at a constant rate. For this and subsequent charts, geom point is used, with each region marked by different colored points, with the intention of seeing if there is any clustering going on.</p>
+<p>The sheer quantity of negative words visualized in the above word cloud, when compared to the positive words, makes clear the disparity in sentiment classes. Additionally these word clouds make it quite a bit easier to judge the intensity of the words ourselves be laying many more out than can comfortably fit on a traditional plot. It’s clear to see that the word ‘love’ is doing a lot of heavy lifting on the positive sentiment side, while many violent or vulgar words dominate the negative sentiment side.</p>
+</section>
+<section id="n-gram-cloud-and-all-the-small-things" class="level2">
+<h2 class="anchored" data-anchor-id="n-gram-cloud-and-all-the-small-things">N-Gram Cloud and All the Small Things</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>d2 <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>population, <span class="at">y=</span>gun_deaths, <span class="at">color =</span> geo_region)) <span class="sc">+</span> </span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'US Gun Deaths vs Population'</span>, <span class="at">x =</span> <span class="st">'Population'</span>, <span class="at">y =</span> <span class="st">'Gun Deaths'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot ngram cloud</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>blink_df <span class="sc">%&gt;%</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(ngram, Lyrics, <span class="at">token =</span> <span class="st">"ngrams"</span>, <span class="at">n =</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(ngram, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(n, <span class="at">n =</span> <span class="dv">200</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">with</span>(<span class="fu">wordcloud2</span>(<span class="at">data =</span> ., <span class="at">shape =</span> <span class="st">"star"</span>, <span class="at">fontFamily =</span> <span class="st">"sans-serif"</span>, <span class="at">color =</span> <span class="st">"random-dark"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<div class="wordcloud2 html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8944a76125295a4502e3" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-8944a76125295a4502e3">{"x":{"word":["na na na","oh oh oh","down down down","this makes no","duh na na","i'm sorry i'm","i i i","sorry i'm sorry","know that everything","i miss you","makes no sense","and i wait","no no no","no sense this","sense this makes","on and on","da da dah","duh da duh","i wait and","olé olé olé","wait and i","when we were","and i know","over and over","you don't know","nah nah nah","don't want to","i don't wanna","i go back","na duh na","na na duh","the first time","all night long","back should i","everything know that","go back should","should i go","that everything know","and over and","dance with me","don't know what","let me go","on the floor","we were young","da duh da","go go go","know what you've","me go go","miss you i","one more time","what you've got","with you with","you i miss","you with you","again and again","blame it on","days happy days","happy days happy","like the first","lost without you","nothing like the","goin to the","i know that","i saw you","i'm goin to","i'm lost without","it all night","on my youth","out of my","this is the","to the darkside","wah wah wah","won't you say","yeah yeah yeah","you say something","at the rock","blame it blame","darkside with you","doing it all","don't love me","girl at the","i don't care","it blame it","it on my","just about done","the darkside with","the girl at","the rock show","up all night","we're doing it","with the girl","you don't love","about done with","doesn't want me","done with your","fell in love","heaven doesn't want","i time bomb","i'm feelin this","lie to my","remember the time","the last time","time that i","to my face","when i'm sober","whoa oh oh","with your butt","yeah we're doing","you remember the","and i don't","cause you're the","i don't feel","i really wish","if you don't","like violence you","love me lie","me lie to","so let me","to move on","well i guess","you save me","away don't let","bomb i time","care what you","da da da","da dah da","dah da da","did she go","don't care what","don't let me","don't wanna know","got you don't","i hated you","i wish that","i'm never coming","keep me up","la da da","me up all","olé olé yeah","olé yeah we're","really wish i","run run run","talk to you","the only thing","they don't care","they keep me","time bomb i","to san diego","what you say","wish i hated","you talk too","you're the only","you've got you","i am i'm","i think it's","know i don't","let's make this","more time one","never coming home","of my head","sleeping on the","talk too much","time one more","wanna let go","a long time","all night they","and when the","be so bad","better off sleeping","butt we'll let","care about you","coming home i'm","didn't have to","don't care about","even if she","everything everything's gonna","everything's gonna be","falls in love","feel the same","forever and after","gonna be fine","have to be","hey just about","i can't get","i don't want","i saw her","i wait for","i wish it","i'll never talk","i'll see you","i'm always wanting","if she falls","is the last","it didn't have","it's a long","let you know","long olé olé","love love is","me forever and","never talk to","night long olé","night they keep","off sleeping on","saw you again","she falls in","she's better off","that everything everything's","to be so","to you again","we'll let you","wish it didn't","you know hey","your butt we'll"],"freq":[303,75,61,36,34,32,31,31,30,29,29,28,27,27,27,25,24,24,24,24,24,24,23,23,23,22,21,21,21,21,21,21,20,20,20,20,20,20,19,19,19,19,19,19,18,18,18,18,18,18,18,18,18,18,17,17,17,17,17,17,17,16,16,16,16,16,16,16,16,16,16,16,16,16,16,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,14,13,13,13,13,13,13,13,13,13,13,13,13,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,11,11,11,11,11,11,11,11,11,11,11,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10],"fontFamily":"sans-serif","fontWeight":"bold","color":"random-dark","minSize":0,"weightFactor":0.594059405940594,"backgroundColor":"white","gridSize":0,"minRotation":-0.7853981633974483,"maxRotation":0.7853981633974483,"shuffle":true,"rotateRatio":0.4,"shape":"star","ellipticity":0.65,"figBase64":null,"hover":null},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
-</div>
-<p>Here we see the trend become much less apparent. It appears that deaths per 100,000 increases with the number of deaths at first, but then we get several observations where the trend seems to dissipate. However Deaths per 100,000 people is a much smaller scale than gun_deaths, so some additional transformations may bring us some clarity here.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>d2 <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>gun_deaths, <span class="at">y=</span>dpp, <span class="at">color =</span> geo_region)) <span class="sc">+</span> </span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Gun Deaths per 100,000 People vs Count of Gun Deaths'</span>, <span class="at">x =</span> <span class="st">'Gun Deaths'</span>, <span class="at">y =</span> <span class="st">'Deaths per 100,000 People'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>This plot is the same as the last one, but with a log base 2 scale for the count of gun deaths, to help with the disparity between the two variables. Our trend is much clearer now, which would suggest that gun deaths do not only increase with population. We can use some statistical methods to determine if the relationship is significant or not. <code>scale_x_continuous()</code> was used to transform the previous plot into a log base two scale. Additionally, bquote was used to get a subscript ‘2’ in the x-axis title.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>d2 <span class="sc">%&gt;%</span> <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>gun_deaths, <span class="at">y=</span>dpp, <span class="at">color =</span> geo_region)) <span class="sc">+</span> </span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">'log2'</span>) <span class="sc">+</span></span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">'Gun Deaths per 100,000 People vs Count of Gun Deaths'</span>, <span class="at">y =</span> <span class="st">'Deaths per 100,000 People'</span>,</span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">bquote</span>(<span class="st">'Gun Deaths log'</span>[<span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="data-exercise_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>From here we have fit three linear models. The first of which is a baseline of sorts, fitting gun deaths as a function of population, and geographical region.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>fit3 <span class="ot">&lt;-</span> <span class="fu">lm</span>(gun_deaths <span class="sc">~</span> population <span class="sc">+</span> geo_region, <span class="at">data =</span> d2) <span class="co"># lm fits the model</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit3) <span class="co"># summary gives us the results</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = gun_deaths ~ population + geo_region, data = d2)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--93.316 -41.058  -0.936  21.922 182.819 
-
-Coefficients:
-                          Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)             -3.980e+01  2.117e+01  -1.880   0.0666 .  
-population               3.303e-05  1.237e-06  26.708   &lt;2e-16 ***
-geo_regionSouth          5.824e+01  2.473e+01   2.355   0.0229 *  
-geo_regionNorth Central  7.909e+00  2.614e+01   0.303   0.7636    
-geo_regionWest           3.996e+00  2.571e+01   0.155   0.8772    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 59.27 on 45 degrees of freedom
-Multiple R-squared:  0.9431,    Adjusted R-squared:  0.9381 
-F-statistic: 186.6 on 4 and 45 DF,  p-value: &lt; 2.2e-16</code></pre>
-</div>
-</div>
-<p>We can see the results are statistically significant. That is to say, we would reject the null hypothesis that there is no linear relationship between population and geographical region (specifically if the state is a southern state), and the number of gun deaths. This is to be expected, the question ultimately is whether larger gun deaths in one state versus another can be dismissed as a result of differences in population. Population effects the overall count, but frequency per person still must be observed.</p>
-<p>Here we fit a model for deaths per 100,000 people as a function of gun deaths and geographical region. Note the transformation taken for gun deaths was only applied to the one variable.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>fit4 <span class="ot">&lt;-</span> <span class="fu">lm</span>(dpp <span class="sc">~</span> <span class="fu">log2</span>(gun_deaths) <span class="sc">+</span> geo_region, <span class="at">data =</span> d2) <span class="co"># log2 only taken on gun_deaths</span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit4)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = dpp ~ log2(gun_deaths) + geo_region, data = d2)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--1.3608 -0.6679 -0.2038  0.3823  3.6798 
-
-Coefficients:
-                        Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)             -0.47185    0.49360  -0.956   0.3442    
-log2(gun_deaths)         0.41701    0.06714   6.211 1.52e-07 ***
-geo_regionSouth          1.00864    0.42401   2.379   0.0217 *  
-geo_regionNorth Central  0.09457    0.42879   0.221   0.8264    
-geo_regionWest           0.08065    0.42023   0.192   0.8487    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 0.9685 on 45 degrees of freedom
-Multiple R-squared:  0.6195,    Adjusted R-squared:  0.5857 
-F-statistic: 18.32 on 4 and 45 DF,  p-value: 5.403e-09</code></pre>
-</div>
-</div>
-<p>Again we see statistically significant results, so we would reject the null hypothesis that there is no linear relationship between the log base 2 of gun deaths and geographical region, and gun deaths per 100,000 people. It is worth noting the Adjusted R Square is .5857, meaning 58.57% of the variance is explained by this model. The last model had a better R-square, but again that is to be expected, and we will see in a moment that population explains less variance in the rate than the count of gun deaths does.</p>
-<p>Our last model is a sanity check of sorts, but we fit deaths per 100,000 people against the log base 2 of the population. We do this to determine if this relationship exists and to see how much variance it explains compared to the last model.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>fit5 <span class="ot">&lt;-</span> <span class="fu">lm</span>(dpp <span class="sc">~</span> <span class="fu">log2</span>(population) <span class="sc">+</span> geo_region, <span class="at">data =</span> d2)</span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = dpp ~ log2(population) + geo_region, data = d2)
-
-Residuals:
-    Min      1Q  Median      3Q     Max 
--1.6525 -0.8531 -0.2354  0.6224  4.1551 
-
-Coefficients:
-                        Estimate Std. Error t value Pr(&gt;|t|)   
-(Intercept)              -6.1836     2.6375  -2.345  0.02352 * 
-log2(population)          0.3703     0.1202   3.081  0.00352 **
-geo_regionSouth           1.5839     0.5055   3.134  0.00304 **
-geo_regionNorth Central   0.2506     0.5296   0.473  0.63831   
-geo_regionWest            0.1071     0.5216   0.205  0.83817   
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 1.199 on 45 degrees of freedom
-Multiple R-squared:  0.4163,    Adjusted R-squared:  0.3645 
-F-statistic: 8.025 on 4 and 45 DF,  p-value: 5.678e-05</code></pre>
-</div>
-</div>
-<p>We still see statistically significant results, so we would still reject the null hypothesis that there is no linear relationship between the log base 2 of population and geographical region, and deaths per 100,000 people. However, we can see there is an adjusted R-Square of 0.3645, so only 36.45% of the variance is explained by this model. While there is a significant amount of variation explained here, more variation is explained by the count of gun deaths than population. With this, it would be safe to say that a larger number of gun deaths in a state is not just a result of a larger population, and would likely lead to a larger rate of gun deaths overall.</p>
+<p>Finally we can instead reinterpret the tokenization process to consider ngrams of 3-words rather than individual words. We’ve limited the above word cloud to only 200 ngram combinations, but it’s clear to see that some iconic onomatopeias still stand as a lasting linguistic legacy for the band.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
