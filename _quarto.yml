@@ -20,6 +20,8 @@ website:
             file: tidytuesday-exercise/tidytuesday-exercise.qmd
           - text: "Complex Data Exercise"
             file: data-exercise/data-exercise.qmd
+          - text: "Synthetic Data Exercise"
+            file: syn-data-exercise/syn-data-exercise.qmd
     right:
       - icon: github 
         href: https://github.com/seventeencents/seanosullivan-P2-portfolio        

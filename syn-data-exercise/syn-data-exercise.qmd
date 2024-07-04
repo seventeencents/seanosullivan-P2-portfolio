@@ -1,0 +1,95 @@
+---
+title: "Synthetic Data Exercise"
+---
+
+# Introduction and Setup
+
+For this exercise we'll begin by cleaning and then exploring some real data gathered from the CDC to understand the underlying distributions and relationships that exist between the data points contained within. Once we've done so we'll generate synthetic data designed to approximate the same relationships and distributions, but that can be explored and modeled independent of original observations. 
+
+The data set that we're utlizing for this exercise can be found at the CDC's website below:
+[CDC Counts of Death by State and Cause](https://data.cdc.gov/NCHS/Weekly-Provisional-Counts-of-Deaths-by-State-and-S/muzy-jte6/data_preview)
+
+This data set is summarized by the CDC as containing "provisional counts of deaths by the week the deaths occurred, by state of occurrence, and by select underlying causes of death for 2020-2023."
+
+## Data Import and Name Repair
+
+```{r, warning=FALSE}
+# load and install necessary packages for notebook
+pacman::p_load(here,
+               tidyverse,
+               ggthemes,
+               patchwork,
+               skimr)
+
+# read in original dataframe
+cdc_df <- read_csv(here("syn-data-exercise/data/raw-data/Weekly_Provisional_Counts_of_Deaths_by_State_and_Select_Causes__2020-2023_20240703.csv"),
+                   col_names = TRUE,
+                   show_col_types = FALSE,
+                   name_repair = make.names)
+```
+
+## Exploring the original data
+
+### Subsetting and handling missing values
+
+```{r}
+# examine the data types, distributions, and missing values of the various columns contained within
+skim(cdc_df)
+```
+
+In the original, complete dataset we can see that there are many unneccesary flag columns as well as many variables whose data are missing. In order to address some of these concerns, for now we'll limit the scope of our exploration to just the state of Texas and those columns with analytical merit.
+
+```{r}
+# subsetting the dataframe to reduce the scope to just Texas data and to remove flag columns without much consequential data
+texas_df <- cdc_df %>%
+  select(-1, -3:-4, -21:-35) %>%
+  filter(Jurisdiction.of.Occurrence == "Texas") %>%
+  select(2, 7:8, 10, 12, 14)
+
+# renaming the columns
+newNames <- colnames(texas_df)
+names(newNames) <- c("week", "diabetes", "alzheimer", "respiratory", "kidney", "heart")
+texas_df <- texas_df %>% 
+  rename(all_of(newNames))
+```
+
+Having limited the scope we now have 15 numeric variables, 1 date variable, and 1 character variable -- all of which contain zero missing values except for those pertaining to COVID-19 in the early stages of the pandemic. We'll assume these values weren't well understood or tracked at that time and choose not to select them for the purposes of this exploration. 
+
+Having selected a handful of interesting and complete features (specifically diabetes, Alzheimer's, chronic respiratory disease, kidney disease, and heart disease) we now save this data as a new dataframe and proceed with exploring the underlying distributions further.
+
+### Visualizing distributions and summarizing numeric features
+
+Now that we have our subset dataframe we can visualize the distributions of each feature to determine their shape and also examine the summary statistics for each feature. Each of which will aid in generating synthetic data that closely resembles the original Texas data. 
+
+```{r}
+# subset just the numeric features
+texas_num <- texas_df %>%
+  select(where(is.numeric))
+
+# function for plotting multiple columns iteratively through the dataframe
+histfunc <- function(colname) {
+colname <- sym(colname)
+plot <- texas_num %>% 
+  ggplot(aes(x = !!colname)) +
+  geom_histogram(aes(y = after_stat(density)), col ="white", fill = "aquamarine2", bins = 30) +
+  geom_density(col = "aquamarine3") +
+  theme_clean() +
+  ylab(NULL) +
+  theme(axis.text.y=element_blank(),
+  axis.ticks.y=element_blank())
+}
+
+# iterating through the numeric columns of the dataframe with the above function and plotting the results
+hists <- lapply(colnames(texas_num), FUN = histfunc)
+
+hists[[1]]
+hists[[2]]
+hists[[3]]
+hists[[4]]
+hists[[5]]
+
+# summarize numeric characteristics
+skim(texas_num)
+```
+
+With the above plots we can see that most of the numeric features follow normal or at least nearly normal distributions. This fact, when paired with the mean and standard deviations for each value, should hopefully make generating synthetic data that closely approximates the original data fairly straightforward.
