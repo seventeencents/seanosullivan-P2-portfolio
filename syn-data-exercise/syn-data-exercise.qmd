@@ -93,3 +93,91 @@ skim(texas_num)
 ```
 
 With the above plots we can see that most of the numeric features follow normal or at least nearly normal distributions. This fact, when paired with the mean and standard deviations for each value, should hopefully make generating synthetic data that closely approximates the original data fairly straightforward.
+
+### This part contributed to by William Hyltin.
+
+**To create the synthetic dataset, i used the following prompt in ChatGPT:**
+Help me create code that will generate a synthetic dataset in R with the following characteristics:  
+The dataset with bein a dataframe format with 6 columns and 194 rows.  
+The first column would be in a date format, with weekly dates ranging from Jan 4th, 2020 to September 16th, 20023  
+The second column would be aggregated counts of deaths from diabetes. The mean value of the column would be 151.90206, with a standard deviation of 22.02438, a minimum of 79, first quartile of 138, median of 150, 3rd quartile of 165, and maximum of 248. The distribution should appear relatively bell-shaped except for the outlier maximum value  
+The third column would be aggregated counts of deaths from alzheimers. The mean value of the column would be 206.34021, with a standard deviation of 31.28869, a minimum of 141, first quartile of 183.25, median of 200.0, 3rd quartile of 222.75, and maximum of 312. The distribution should appear somewhat bell-shaped and right skewed.  
+The fourth column would be aggregated counts of deaths from respiratory disease. The mean value of the column would be 194.72680, with a standard deviation of 23.67926, a minimum of 116, first quartile of 178.25, median of 193.0, 3rd quartile of 207.75, and maximum of 267. The distribution should appear somewhat bell-shaped and fairly symmetrical.  
+The fifth column would be aggregated counts of deaths from kidney disease. The mean value of the column would be 88.89691, with a standard deviation of 11.78520, a minimum of 46, first quartile of 81.00, median of 88.5, 3rd quartile of 96.00, and maximum of 125. The distribution should appear somewhat bimodal bell-shaped.  
+The fifth column would be aggregated counts of deaths from heart disease. The mean value of the column would be 968.10309, with a standard deviation of 89.36407, a minimum of 498, first quartile of 913.75, median of 960.0, 3rd quartile of 1014.50, and maximum of 1271. The distribution should appear somewhat bell-shaped, but left skewed due to the minimum value being an outlier.  
+
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate dates from Jan 4th, 2020 to Sep 16th, 2023 (weekly dates)
+dates <- seq(as.Date("2020-01-04"), as.Date("2023-09-16"), by = "week")
+
+# Generate synthetic data
+data <- data.frame(
+  Date = dates,
+  Diabetes_Deaths = round(rnorm(length(dates), mean = 151.90206, sd = 22.02438), 0),
+  Alzheimer_Deaths = round(rnorm(length(dates), mean = 206.34021, sd = 31.28869), 0),
+  Respiratory_Deaths = round(rnorm(length(dates), mean = 194.72680, sd = 23.67926), 0),
+  Kidney_Deaths = round(rnorm(length(dates), mean = 88.89691, sd = 11.78520), 0),
+  Heart_Deaths = round(rnorm(length(dates), mean = 968.10309, sd = 89.36407), 0)
+)
+
+# Adjusting outliers to match specified min and max values
+data[data$Diabetes_Deaths==min(data$Diabetes_Deaths), 2] <- 79
+data[data$Diabetes_Deaths==max(data$Diabetes_Deaths), 2] <- 248
+
+data[data$Alzheimer_Deaths==min(data$Alzheimer_Deaths), 3] <- 141
+data[data$Alzheimer_Deaths==max(data$Alzheimer_Deaths), 3] <- 312
+
+data[data$Respiratory_Deaths==min(data$Respiratory_Deaths), 4] <- 116
+data[data$Respiratory_Deaths==max(data$Respiratory_Deaths), 4] <- 267
+
+
+data[data$Kidney_Deaths==min(data$Kidney_Deaths), 5] <- 46
+data[data$Kidney_Deaths==max(data$Kidney_Deaths), 5] <- 125
+
+data[data$Heart_Deaths==min(data$Heart_Deaths), 6] <- 498
+data[data$Heart_Deaths==max(data$Heart_Deaths), 6] <- 1271
+
+# Display summary statistics
+summary(data)
+
+# View the structure of the dataframe
+str(data)
+
+# View the first few rows of the dataframe
+head(data)
+```
+
+The code provided by ChatGPT worked reasonably well, however some rewriting was necessary to get the min and max override section to work properly.
+
+```{r}
+newNames2 <- colnames(data)
+names(newNames2) <- c("week", "diabetes", "alzheimer", "respiratory", "kidney", "heart")
+data <- data %>% 
+  rename(all_of(newNames2))
+
+histfunc2 <- function(colname) {
+colname <- sym(colname)
+plot <- data %>% 
+  ggplot(aes(x = !!colname)) +
+  geom_histogram(aes(y = after_stat(density)), col ="white", fill = "aquamarine2", bins = 30) +
+  geom_density(col = "aquamarine3") +
+  theme_clean() +
+  ylab(NULL) +
+  theme(axis.text.y=element_blank(),
+  axis.ticks.y=element_blank())
+}
+
+skim(data)
+hists2 <- lapply(colnames(data[,-1]), FUN = histfunc2)
+
+hists2[[1]]
+hists2[[2]]
+hists2[[3]]
+hists2[[4]]
+hists2[[5]]
+```
+
+The synthetic data fits relatively well when looking at the summary statistics. The plots are reasonably close, but the trickiest part here is the use of the rnorm function. The function does not have a good way to account for skewness, however it is one of the best I have found for bell-shaped synthetic data that gives control of mean and standard deviation. A potential solution to match the skewness might be using other sampling distribution functions like rbeta or rexp, but these don't give the same level of control over the mean and standard devitation without significant knowledge of these distributions or trial and error, so I chose to override the min and max values and that seemed to improve the shape relatively well.
