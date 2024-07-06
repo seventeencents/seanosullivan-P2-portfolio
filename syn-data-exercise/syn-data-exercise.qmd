@@ -94,6 +94,7 @@ skim(texas_num)
 
 With the above plots we can see that most of the numeric features follow normal or at least nearly normal distributions. This fact, when paired with the mean and standard deviations for each value, should hopefully make generating synthetic data that closely approximates the original data fairly straightforward.
 
+# Generating synthetic data
 ### This part contributed to by William Hyltin.
 
 **To create the synthetic dataset, i used the following prompt in ChatGPT:**

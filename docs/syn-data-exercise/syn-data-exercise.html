@@ -991,9 +991,344 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>With the above plots we can see that most of the numeric features follow normal or at least nearly normal distributions. This fact, when paired with the mean and standard deviations for each value, should hopefully make generating synthetic data that closely approximates the original data fairly straightforward.</p>
-
-
 </section>
+</section>
+</section>
+<section id="generating-synthetic-data" class="level1">
+<h1>Generating synthetic data</h1>
+<section id="this-part-contributed-to-by-william-hyltin." class="level3">
+<h3 class="anchored" data-anchor-id="this-part-contributed-to-by-william-hyltin.">This part contributed to by William Hyltin.</h3>
+<p><strong>To create the synthetic dataset, i used the following prompt in ChatGPT:</strong> Help me create code that will generate a synthetic dataset in R with the following characteristics:<br>
+The dataset with bein a dataframe format with 6 columns and 194 rows.<br>
+The first column would be in a date format, with weekly dates ranging from Jan 4th, 2020 to September 16th, 20023<br>
+The second column would be aggregated counts of deaths from diabetes. The mean value of the column would be 151.90206, with a standard deviation of 22.02438, a minimum of 79, first quartile of 138, median of 150, 3rd quartile of 165, and maximum of 248. The distribution should appear relatively bell-shaped except for the outlier maximum value<br>
+The third column would be aggregated counts of deaths from alzheimers. The mean value of the column would be 206.34021, with a standard deviation of 31.28869, a minimum of 141, first quartile of 183.25, median of 200.0, 3rd quartile of 222.75, and maximum of 312. The distribution should appear somewhat bell-shaped and right skewed.<br>
+The fourth column would be aggregated counts of deaths from respiratory disease. The mean value of the column would be 194.72680, with a standard deviation of 23.67926, a minimum of 116, first quartile of 178.25, median of 193.0, 3rd quartile of 207.75, and maximum of 267. The distribution should appear somewhat bell-shaped and fairly symmetrical.<br>
+The fifth column would be aggregated counts of deaths from kidney disease. The mean value of the column would be 88.89691, with a standard deviation of 11.78520, a minimum of 46, first quartile of 81.00, median of 88.5, 3rd quartile of 96.00, and maximum of 125. The distribution should appear somewhat bimodal bell-shaped.<br>
+The fifth column would be aggregated counts of deaths from heart disease. The mean value of the column would be 968.10309, with a standard deviation of 89.36407, a minimum of 498, first quartile of 913.75, median of 960.0, 3rd quartile of 1014.50, and maximum of 1271. The distribution should appear somewhat bell-shaped, but left skewed due to the minimum value being an outlier.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate dates from Jan 4th, 2020 to Sep 16th, 2023 (weekly dates)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2020-01-04"</span>), <span class="fu">as.Date</span>(<span class="st">"2023-09-16"</span>), <span class="at">by =</span> <span class="st">"week"</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate synthetic data</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Date =</span> dates,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">Diabetes_Deaths =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(dates), <span class="at">mean =</span> <span class="fl">151.90206</span>, <span class="at">sd =</span> <span class="fl">22.02438</span>), <span class="dv">0</span>),</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">Alzheimer_Deaths =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(dates), <span class="at">mean =</span> <span class="fl">206.34021</span>, <span class="at">sd =</span> <span class="fl">31.28869</span>), <span class="dv">0</span>),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">Respiratory_Deaths =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(dates), <span class="at">mean =</span> <span class="fl">194.72680</span>, <span class="at">sd =</span> <span class="fl">23.67926</span>), <span class="dv">0</span>),</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">Kidney_Deaths =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(dates), <span class="at">mean =</span> <span class="fl">88.89691</span>, <span class="at">sd =</span> <span class="fl">11.78520</span>), <span class="dv">0</span>),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">Heart_Deaths =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(<span class="fu">length</span>(dates), <span class="at">mean =</span> <span class="fl">968.10309</span>, <span class="at">sd =</span> <span class="fl">89.36407</span>), <span class="dv">0</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Adjusting outliers to match specified min and max values</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Diabetes_Deaths<span class="sc">==</span><span class="fu">min</span>(data<span class="sc">$</span>Diabetes_Deaths), <span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="dv">79</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Diabetes_Deaths<span class="sc">==</span><span class="fu">max</span>(data<span class="sc">$</span>Diabetes_Deaths), <span class="dv">2</span>] <span class="ot">&lt;-</span> <span class="dv">248</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Alzheimer_Deaths<span class="sc">==</span><span class="fu">min</span>(data<span class="sc">$</span>Alzheimer_Deaths), <span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="dv">141</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Alzheimer_Deaths<span class="sc">==</span><span class="fu">max</span>(data<span class="sc">$</span>Alzheimer_Deaths), <span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="dv">312</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Respiratory_Deaths<span class="sc">==</span><span class="fu">min</span>(data<span class="sc">$</span>Respiratory_Deaths), <span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="dv">116</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Respiratory_Deaths<span class="sc">==</span><span class="fu">max</span>(data<span class="sc">$</span>Respiratory_Deaths), <span class="dv">4</span>] <span class="ot">&lt;-</span> <span class="dv">267</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Kidney_Deaths<span class="sc">==</span><span class="fu">min</span>(data<span class="sc">$</span>Kidney_Deaths), <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="dv">46</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Kidney_Deaths<span class="sc">==</span><span class="fu">max</span>(data<span class="sc">$</span>Kidney_Deaths), <span class="dv">5</span>] <span class="ot">&lt;-</span> <span class="dv">125</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Heart_Deaths<span class="sc">==</span><span class="fu">min</span>(data<span class="sc">$</span>Heart_Deaths), <span class="dv">6</span>] <span class="ot">&lt;-</span> <span class="dv">498</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>data[data<span class="sc">$</span>Heart_Deaths<span class="sc">==</span><span class="fu">max</span>(data<span class="sc">$</span>Heart_Deaths), <span class="dv">6</span>] <span class="ot">&lt;-</span> <span class="dv">1271</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Display summary statistics</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Date            Diabetes_Deaths Alzheimer_Deaths Respiratory_Deaths
+ Min.   :2020-01-04   Min.   : 79.0   Min.   :141.0    Min.   :116.0     
+ 1st Qu.:2020-12-06   1st Qu.:139.0   1st Qu.:188.0    1st Qu.:182.0     
+ Median :2021-11-09   Median :151.0   Median :207.0    Median :196.0     
+ Mean   :2021-11-09   Mean   :151.9   Mean   :208.1    Mean   :195.5     
+ 3rd Qu.:2022-10-13   3rd Qu.:164.0   3rd Qu.:228.0    3rd Qu.:211.8     
+ Max.   :2023-09-16   Max.   :248.0   Max.   :312.0    Max.   :267.0     
+ Kidney_Deaths     Heart_Deaths   
+ Min.   : 46.00   Min.   : 498.0  
+ 1st Qu.: 80.00   1st Qu.: 911.2  
+ Median : 89.00   Median : 973.5  
+ Mean   : 88.52   Mean   : 971.2  
+ 3rd Qu.: 96.00   3rd Qu.:1027.5  
+ Max.   :125.00   Max.   :1271.0  </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the structure of the dataframe</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   194 obs. of  6 variables:
+ $ Date              : Date, format: "2020-01-04" "2020-01-11" ...
+ $ Diabetes_Deaths   : num  140 147 186 153 155 190 162 124 137 142 ...
+ $ Alzheimer_Deaths  : num  165 269 225 167 187 169 275 247 198 223 ...
+ $ Respiratory_Deaths: num  184 203 179 144 216 175 181 230 176 215 ...
+ $ Kidney_Deaths     : num  75 95 77 86 93 80 96 73 46 94 ...
+ $ Heart_Deaths      : num  968 943 1011 943 1041 ...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View the first few rows of the dataframe</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        Date Diabetes_Deaths Alzheimer_Deaths Respiratory_Deaths Kidney_Deaths
+1 2020-01-04             140              165                184            75
+2 2020-01-11             147              269                203            95
+3 2020-01-18             186              225                179            77
+4 2020-01-25             153              167                144            86
+5 2020-02-01             155              187                216            93
+6 2020-02-08             190              169                175            80
+  Heart_Deaths
+1          968
+2          943
+3         1011
+4          943
+5         1041
+6         1049</code></pre>
+</div>
+</div>
+<p>The code provided by ChatGPT worked reasonably well, however some rewriting was necessary to get the min and max override section to work properly.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>newNames2 <span class="ot">&lt;-</span> <span class="fu">colnames</span>(data)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(newNames2) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"week"</span>, <span class="st">"diabetes"</span>, <span class="st">"alzheimer"</span>, <span class="st">"respiratory"</span>, <span class="st">"kidney"</span>, <span class="st">"heart"</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="fu">all_of</span>(newNames2))</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>histfunc2 <span class="ot">&lt;-</span> <span class="cf">function</span>(colname) {</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>colname <span class="ot">&lt;-</span> <span class="fu">sym</span>(colname)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> <span class="sc">!!</span>colname)) <span class="sc">+</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(density)), <span class="at">col =</span><span class="st">"white"</span>, <span class="at">fill =</span> <span class="st">"aquamarine2"</span>, <span class="at">bins =</span> <span class="dv">30</span>) <span class="sc">+</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">col =</span> <span class="st">"aquamarine3"</span>) <span class="sc">+</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_clean</span>() <span class="sc">+</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.y=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">axis.ticks.y=</span><span class="fu">element_blank</span>())</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Data summary</caption>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Name</td>
+<td style="text-align: left;">data</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Number of rows</td>
+<td style="text-align: left;">194</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Number of columns</td>
+<td style="text-align: left;">6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">_______________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Column type frequency:</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Date</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">________________________</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Group variables</td>
+<td style="text-align: left;">None</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: Date</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 12%">
+<col style="width: 17%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: left;">min</th>
+<th style="text-align: left;">max</th>
+<th style="text-align: left;">median</th>
+<th style="text-align: right;">n_unique</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">week</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">2020-01-04</td>
+<td style="text-align: left;">2023-09-16</td>
+<td style="text-align: left;">2021-11-09</td>
+<td style="text-align: right;">194</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 11%">
+<col style="width: 16%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">p0</th>
+<th style="text-align: right;">p25</th>
+<th style="text-align: right;">p50</th>
+<th style="text-align: right;">p75</th>
+<th style="text-align: right;">p100</th>
+<th style="text-align: left;">hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">diabetes</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">151.94</td>
+<td style="text-align: right;">21.36</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">139.00</td>
+<td style="text-align: right;">151.0</td>
+<td style="text-align: right;">164.00</td>
+<td style="text-align: right;">248</td>
+<td style="text-align: left;">▁▆▇▁▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">alzheimer</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">208.14</td>
+<td style="text-align: right;">31.62</td>
+<td style="text-align: right;">141</td>
+<td style="text-align: right;">188.00</td>
+<td style="text-align: right;">207.0</td>
+<td style="text-align: right;">228.00</td>
+<td style="text-align: right;">312</td>
+<td style="text-align: left;">▃▇▆▂▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">respiratory</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">195.53</td>
+<td style="text-align: right;">23.15</td>
+<td style="text-align: right;">116</td>
+<td style="text-align: right;">182.00</td>
+<td style="text-align: right;">196.0</td>
+<td style="text-align: right;">211.75</td>
+<td style="text-align: right;">267</td>
+<td style="text-align: left;">▁▂▇▅▁</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">kidney</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">88.52</td>
+<td style="text-align: right;">12.68</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">80.00</td>
+<td style="text-align: right;">89.0</td>
+<td style="text-align: right;">96.00</td>
+<td style="text-align: right;">125</td>
+<td style="text-align: left;">▁▃▇▆▁</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">heart</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">971.16</td>
+<td style="text-align: right;">96.63</td>
+<td style="text-align: right;">498</td>
+<td style="text-align: right;">911.25</td>
+<td style="text-align: right;">973.5</td>
+<td style="text-align: right;">1027.50</td>
+<td style="text-align: right;">1271</td>
+<td style="text-align: left;">▁▁▇▇▁</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>hists2 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">colnames</span>(data[,<span class="sc">-</span><span class="dv">1</span>]), <span class="at">FUN =</span> histfunc2)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>hists2[[<span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="syn-data-exercise_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>hists2[[<span class="dv">2</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="syn-data-exercise_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>hists2[[<span class="dv">3</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="syn-data-exercise_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>hists2[[<span class="dv">4</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="syn-data-exercise_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>hists2[[<span class="dv">5</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="syn-data-exercise_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The synthetic data fits relatively well when looking at the summary statistics. The plots are reasonably close, but the trickiest part here is the use of the rnorm function. The function does not have a good way to account for skewness, however it is one of the best I have found for bell-shaped synthetic data that gives control of mean and standard deviation. A potential solution to match the skewness might be using other sampling distribution functions like rbeta or rexp, but these don’t give the same level of control over the mean and standard devitation without significant knowledge of these distributions or trial and error, so I chose to override the min and max values and that seemed to improve the shape relatively well.</p>
+
+
 </section>
 </section>
 
