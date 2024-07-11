@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -66,6 +100,49 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<script src="../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<script src="../site_libs/proj4js-2.3.15/proj4.js"></script>
+<link href="../site_libs/highcharts-9.3.1/css/motion.css" rel="stylesheet">
+<script src="../site_libs/highcharts-9.3.1/highcharts.js"></script>
+<script src="../site_libs/highcharts-9.3.1/highcharts-3d.js"></script>
+<script src="../site_libs/highcharts-9.3.1/highcharts-more.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/stock.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/map.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/data.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/exporting.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/offline-exporting.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/drilldown.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/item-series.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/overlapping-datalabels.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/annotations.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/export-data.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/funnel.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/heatmap.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/treemap.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/sankey.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/dependency-wheel.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/organization.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/solid-gauge.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/streamgraph.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/sunburst.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/vector.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/wordcloud.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/xrange.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/tilemap.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/venn.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/gantt.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/timeline.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/parallel-coordinates.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/bullet.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/coloraxis.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/dumbbell.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/lollipop.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/series-label.js"></script>
+<script src="../site_libs/highcharts-9.3.1/plugins/motion.js"></script>
+<script src="../site_libs/highcharts-9.3.1/custom/reset.js"></script>
+<script src="../site_libs/highcharts-9.3.1/modules/boost.js"></script>
+<script src="../site_libs/highchart-binding-0.9.4/highchart.js"></script>
 
 
 <link rel="stylesheet" href="../styles.css">
@@ -164,9 +241,2508 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>Placeholder file for the future data/results presentation exercise.</p>
+<section id="recreating-a-professional-viz" class="level1">
+<h1>Recreating a professional viz</h1>
+<section id="laying-the-foundation-with-chatgpt-prompts" class="level2">
+<h2 class="anchored" data-anchor-id="laying-the-foundation-with-chatgpt-prompts">Laying the foundation with ChatGPT prompts</h2>
+<p>With this exercise we’ll aim to generate some professional looking figures by using previously composed professional figures as inspiration. Specifically we’ll be looking to recreate the 4th figure from this <a href="https://fivethirtyeight.com/features/aging-congress-boomers/">FiveThirtyEight article</a>.</p>
+<p>Using the following prompts and the provided data we generated a foundation for recreating the visualization:</p>
+<blockquote class="blockquote">
+<p><em>Could you use the highcharter package in R to replicate a chart similar to the one attached?</em></p>
+<p><em>Specifically each differently colored line should depict the median age of the largest generation group for each start_date year from 1937-2023 in the attached data set. The x-axis should be the 4-digit year from the start_date column and the axis ticks should be for every new decade. There should only be one generation shown for any given start_date year.</em></p>
+</blockquote>
+<blockquote class="blockquote">
+<p><em>Resolve the following error: Error: ‘hcaes(x = plot_data$year, y = plot_data[[gen]])’ argument is not named in hc_add_series</em></p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(highcharter,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               dplyr,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               tidyr)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"../presentation-exercise/raw-data/data_aging_congress.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 29120 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (5): chamber, state_abbrev, bioname, bioguide_id, generation
+dbl  (6): congress, party_code, cmltv_cong, cmltv_chamber, age_days, age_years
+date (2): start_date, birthday
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert start_date to Date and extract year</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>start_date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(data<span class="sc">$</span>start_date)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(data<span class="sc">$</span>start_date, <span class="st">"%Y"</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter data to include only the years 1937-2023</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">1937</span> <span class="sc">&amp;</span> year <span class="sc">&lt;=</span> <span class="dv">2023</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the median age for each generation by year</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>median_age_by_generation <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">median_age =</span> <span class="fu">median</span>(age_years, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Determine the largest generation for each year</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>largest_generation_by_year <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(count <span class="sc">==</span> <span class="fu">max</span>(count)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge with median age data</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>largest_generation_median_age <span class="ot">&lt;-</span> <span class="fu">merge</span>(largest_generation_by_year, median_age_by_generation, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"year"</span>, <span class="st">"generation"</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data for plotting</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> largest_generation_median_age <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, generation, median_age) <span class="sc">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> generation, <span class="at">values_from =</span> median_age)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert year to numeric for proper plotting</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>plot_data<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(plot_data<span class="sc">$</span>year)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot using highcharter</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>hc <span class="ot">&lt;-</span> <span class="fu">highchart</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_xAxis</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"Year"</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>           <span class="at">categories =</span> <span class="fu">unique</span>(plot_data<span class="sc">$</span>year),</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">tickInterval =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_yAxis</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"Median Age"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_title</span>(<span class="at">text =</span> <span class="st">"Median age of the largest generation in each Congress, 1937 to 2023"</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Add series for each generation</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gen <span class="cf">in</span> <span class="fu">names</span>(plot_data)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  hc <span class="ot">&lt;-</span> hc <span class="sc">%&gt;%</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hc_add_series</span>(<span class="at">name =</span> gen,</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> plot_data[[gen]],</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>                  <span class="at">type =</span> <span class="st">"line"</span>)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the chart</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>hc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="highchart html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ec93920d3e31d43244d1" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-ec93920d3e31d43244d1">{"x":{"hc_opts":{"chart":{"reflow":true},"title":{"text":"Median age of the largest generation in each Congress, 1937 to 2023"},"yAxis":{"title":{"text":"Median Age"}},"credits":{"enabled":false},"exporting":{"enabled":false},"boost":{"enabled":false},"plotOptions":{"series":{"label":{"enabled":false},"turboThreshold":0},"treemap":{"layoutAlgorithm":"squarified"}},"xAxis":{"title":{"text":"Year"},"categories":[1937,1939,1941,1943,1945,1947,1949,1951,1953,1955,1957,1959,1961,1963,1965,1967,1969,1971,1973,1975,1977,1979,1981,1983,1985,1987,1989,1991,1993,1995,1997,1999,2001,2003,2005,2007,2009,2011,2013,2015,2017,2019,2021,2023],"tickInterval":10},"series":[{"data":[45.9876796714579,46.8939082819986,48.703627652293,50.40246406570845,52.40383299110195,53.9548254620123,55.7234770704997,56.4325804243669,58.2861054072553,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Lost","type":"line"},{"data":[null,null,null,null,null,null,null,null,null,45.99315537303215,47.2936344969199,47.4715947980835,48.5722108145106,49.2676249144422,49.8699520876112,51.0321697467488,52.7474332648871,54.3997262149213,54.3230663928816,55.0499657768652,56.4202600958248,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Greatest","type":"line"},{"data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,43.0636550308008,44.4845995893224,45.67830253251195,47.4524298425736,49.2621492128679,50.93497604380565,53.0075290896646,54.3545516769336,56.104038329911,57.51676933607121,59.17864476386035,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Silent","type":"line"},{"data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,48.55441478439425,50.280629705681,52.2819986310746,53.9876796714579,55.5126625598905,56.6365503080082,58.1013004791239,59.75906913073235,61.4866529774127,63.4852840520192,65.0431211498973,66.32717316906231],"name":"Boomers","type":"line"}]},"theme":{"chart":{"backgroundColor":"transparent"},"colors":["#7cb5ec","#434348","#90ed7d","#f7a35c","#8085e9","#f15c80","#e4d354","#2b908f","#f45b5b","#91e8e1"]},"conf_opts":{"global":{"Date":null,"VMLRadialGradientURL":"http =//code.highcharts.com/list(version)/gfx/vml-radial-gradient.png","canvasToolsURL":"http =//code.highcharts.com/list(version)/modules/canvas-tools.js","getTimezoneOffset":null,"timezoneOffset":0,"useUTC":true},"lang":{"contextButtonTitle":"Chart context menu","decimalPoint":".","downloadCSV":"Download CSV","downloadJPEG":"Download JPEG image","downloadPDF":"Download PDF document","downloadPNG":"Download PNG image","downloadSVG":"Download SVG vector image","downloadXLS":"Download XLS","drillUpText":"◁ Back to {series.name}","exitFullscreen":"Exit from full screen","exportData":{"annotationHeader":"Annotations","categoryDatetimeHeader":"DateTime","categoryHeader":"Category"},"hideData":"Hide data table","invalidDate":null,"loading":"Loading...","months":["January","February","March","April","May","June","July","August","September","October","November","December"],"noData":"No data to display","numericSymbolMagnitude":1000,"numericSymbols":["k","M","G","T","P","E"],"printChart":"Print chart","resetZoom":"Reset zoom","resetZoomTitle":"Reset zoom level 1:1","shortMonths":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"shortWeekdays":["Sat","Sun","Mon","Tue","Wed","Thu","Fri"],"thousandsSep":" ","viewData":"View data table","viewFullscreen":"View in full screen","weekdays":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]}},"type":"chart","fonts":[],"debug":false},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>For an initial pass this got me fairly close, with only the largest generation for a given year represented and the correct median values displayed at each point. However a lot of the styling needed additional work. Changing line colors, changing font styles, reformatting tooltips, removing the legend and axis titles, and including captions/credits/subtitles were among many of the added styling steps necessary to approximate the design of the original chart.</p>
+</section>
+<section id="tweaking-styling-to-better-approximate-the-original" class="level2">
+<h2 class="anchored" data-anchor-id="tweaking-styling-to-better-approximate-the-original">Tweaking styling to better approximate the original</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install and load necessary libraries</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(highcharter,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>               tidyverse)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"../presentation-exercise/raw-data/data_aging_congress.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 29120 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (5): chamber, state_abbrev, bioname, bioguide_id, generation
+dbl  (6): congress, party_code, cmltv_cong, cmltv_chamber, age_days, age_years
+date (2): start_date, birthday
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert start_date to Date and extract year</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>start_date <span class="ot">&lt;-</span> <span class="fu">as.Date</span>(data<span class="sc">$</span>start_date)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">format</span>(data<span class="sc">$</span>start_date, <span class="st">"%Y"</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter data to include only the years 1937-2023</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(year <span class="sc">&gt;=</span> <span class="dv">1937</span> <span class="sc">&amp;</span> year <span class="sc">&lt;=</span> <span class="dv">2023</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the median age for each generation by year</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>median_age_by_generation <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">median_age =</span> <span class="fu">round</span>(<span class="fu">median</span>(age_years, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Determine the largest generation for each year</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>largest_generation_by_year <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(count <span class="sc">==</span> <span class="fu">max</span>(count)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge with median age data</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>largest_generation_median_age <span class="ot">&lt;-</span> <span class="fu">merge</span>(largest_generation_by_year, median_age_by_generation, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"year"</span>, <span class="st">"generation"</span>))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare data for plotting</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>plot_data <span class="ot">&lt;-</span> largest_generation_median_age <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(year, generation, median_age) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> generation, <span class="at">values_from =</span> median_age)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert year to numeric for proper plotting</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>plot_data<span class="sc">$</span>year <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(plot_data<span class="sc">$</span>year)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the ticks for the first year of each decade</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>tick_positions <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">2</span>, <span class="dv">81</span>, <span class="at">by =</span> <span class="dv">5</span>)</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Create background bands for each generation period</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>bands <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">from =</span> <span class="dv">0</span>, <span class="at">to =</span> <span class="dv">8</span>, <span class="at">color =</span> <span class="st">"rgba(200, 200, 200, 0.2)"</span>, <span class="at">label =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"LOST"</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>, <span class="at">fontWeight =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"#000000"</span>))),  <span class="co"># Lost Generation</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">from =</span> <span class="dv">9</span>, <span class="at">to =</span> <span class="dv">20</span>, <span class="at">color =</span> <span class="st">"rgba(200, 200, 200, 0.2)"</span>, <span class="at">label =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"GREATEST"</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>, <span class="at">fontWeight =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"#000000"</span>))),  <span class="co"># Greatest Generation</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">from =</span> <span class="dv">21</span>, <span class="at">to =</span> <span class="dv">31</span>, <span class="at">color =</span> <span class="st">"rgba(200, 200, 200, 0.2)"</span>, <span class="at">label =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"SILENT"</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>, <span class="at">fontWeight =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"#000000"</span>))),  <span class="co"># Silent Generation</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">from =</span> <span class="dv">32</span>, <span class="at">to =</span> <span class="dv">44</span>, <span class="at">color =</span> <span class="st">"rgba(200, 200, 200, 0.2)"</span>, <span class="at">label =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">"BOOMER"</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>, <span class="at">fontWeight =</span> <span class="st">"bold"</span>, <span class="at">color =</span> <span class="st">"#000000"</span>)))   <span class="co"># Boomers</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot using highcharter</span></span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>hc <span class="ot">&lt;-</span> <span class="fu">highchart</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_xAxis</span>(<span class="at">plotBands =</span> bands,</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>           <span class="at">title =</span> <span class="fu">list</span>(<span class="at">enabled =</span> <span class="cn">FALSE</span>),</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>           <span class="at">categories =</span> plot_data<span class="sc">$</span>year,</span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>           <span class="at">tickPositions =</span> tick_positions,</span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>           <span class="at">labels =</span> <span class="fu">list</span>(<span class="at">format =</span> <span class="st">'{value}'</span>),</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>           <span class="at">gridLineWidth =</span> <span class="dv">0</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_yAxis</span>(<span class="at">title =</span> <span class="fu">list</span>(<span class="at">enabled =</span> <span class="cn">FALSE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_title</span>(<span class="at">text =</span> <span class="st">"Congress is never dominated by generations as old as boomers"</span>, </span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>           <span class="at">align =</span> <span class="st">"left"</span>,</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>           <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>,</span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>                        <span class="at">fontWeight =</span> <span class="st">"bold"</span>,</span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a>                        <span class="at">fontSize =</span> <span class="st">"20px"</span>,</span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a>                        <span class="at">color =</span> <span class="st">"#000000"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_subtitle</span>(<span class="at">text =</span> <span class="st">"Median age of the largest generation in each Congress, 1937 to 2023"</span>,</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>              <span class="at">align =</span> <span class="st">"left"</span>,</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a>              <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontFamily =</span> <span class="st">"Arial"</span>,</span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a>                           <span class="at">fontSize =</span> <span class="st">"16px"</span>,</span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a>                           <span class="at">color =</span> <span class="st">"#000000"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_legend</span>(<span class="at">enabled =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_credits</span>(<span class="at">enabled =</span> <span class="cn">TRUE</span>, <span class="at">text =</span> <span class="st">"SOURCES: BIOGRAPHICAL DIRECTORY OF THE U.S. CONGRESS, U.S. HOUSE OF REPRESENTATIVES, U.S. SENATE, UNITEDSTATES GITHUB, VOTEVIEW.COM"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_caption</span>(<span class="at">text =</span> <span class="st">"Birth years for the Greatest Generation to baby boomers are based on Pew Research Center definitions, while the Lost Generation is defined by Strauss and Howe (1991). They are: Lost (1883-1900), Greatest (1901-1927), Silent (1928-1945), baby boomer (1946-1964)."</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">fontSize =</span> <span class="st">"11px"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_tooltip</span>(<span class="at">backgroundColor =</span> <span class="cn">NULL</span>, <span class="at">borderWidth =</span> <span class="dv">0</span>, <span class="at">style =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">"#000000"</span>, <span class="at">fontWeight =</span> <span class="st">"bold"</span>), <span class="at">headerFormat =</span> <span class="st">"{series.name}&lt;br&gt;{point.x}&lt;br&gt;{point.y}"</span>, <span class="at">pointFormat =</span> <span class="st">""</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_colors</span>(<span class="fu">c</span>(<span class="st">"#2e2e2e"</span>, <span class="st">"#29ad53"</span>, <span class="st">"#fccd25"</span>, <span class="st">"#ff003f"</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hc_add_theme</span>(<span class="fu">hc_theme_538</span>())</span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Add series for each generation</span></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (gen <span class="cf">in</span> <span class="fu">names</span>(plot_data)[<span class="sc">-</span><span class="dv">1</span>]) {</span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>  hc <span class="ot">&lt;-</span> hc <span class="sc">%&gt;%</span></span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hc_add_series</span>(<span class="at">name =</span> gen,</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> plot_data[[gen]],</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>                  <span class="at">type =</span> <span class="st">"line"</span>,</span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>                  <span class="at">marker =</span> <span class="fu">list</span>(<span class="at">enabled =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the chart</span></span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>hc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="highchart html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5991db8ae8607c00342c" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-5991db8ae8607c00342c">{"x":{"hc_opts":{"chart":{"reflow":true},"title":{"text":"Congress is never dominated by generations as old as boomers","align":"left","style":{"fontFamily":"Arial","fontWeight":"bold","fontSize":"20px","color":"#000000"}},"yAxis":{"title":{"text":null,"enabled":false}},"credits":{"enabled":true,"text":"SOURCES: BIOGRAPHICAL DIRECTORY OF THE U.S. CONGRESS, U.S. HOUSE OF REPRESENTATIVES, U.S. SENATE, UNITEDSTATES GITHUB, VOTEVIEW.COM"},"exporting":{"enabled":false},"boost":{"enabled":false},"plotOptions":{"series":{"label":{"enabled":false},"turboThreshold":0},"treemap":{"layoutAlgorithm":"squarified"}},"xAxis":{"plotBands":[{"from":0,"to":8,"color":"rgba(200, 200, 200, 0.2)","label":{"text":"LOST","style":{"fontFamily":"Arial","fontWeight":"bold","color":"#000000"}}},{"from":9,"to":20,"color":"rgba(200, 200, 200, 0.2)","label":{"text":"GREATEST","style":{"fontFamily":"Arial","fontWeight":"bold","color":"#000000"}}},{"from":21,"to":31,"color":"rgba(200, 200, 200, 0.2)","label":{"text":"SILENT","style":{"fontFamily":"Arial","fontWeight":"bold","color":"#000000"}}},{"from":32,"to":44,"color":"rgba(200, 200, 200, 0.2)","label":{"text":"BOOMER","style":{"fontFamily":"Arial","fontWeight":"bold","color":"#000000"}}}],"title":{"enabled":false},"categories":[1937,1939,1941,1943,1945,1947,1949,1951,1953,1955,1957,1959,1961,1963,1965,1967,1969,1971,1973,1975,1977,1979,1981,1983,1985,1987,1989,1991,1993,1995,1997,1999,2001,2003,2005,2007,2009,2011,2013,2015,2017,2019,2021,2023],"tickPositions":[2,7,12,17,22,27,32,37,42,47,52,57,62,67,72,77],"labels":{"format":"{value}"},"gridLineWidth":0},"subtitle":{"text":"Median age of the largest generation in each Congress, 1937 to 2023","align":"left","style":{"fontFamily":"Arial","fontSize":"16px","color":"#000000"}},"legend":{"enabled":false},"caption":{"text":"Birth years for the Greatest Generation to baby boomers are based on Pew Research Center definitions, while the Lost Generation is defined by Strauss and Howe (1991). They are: Lost (1883-1900), Greatest (1901-1927), Silent (1928-1945), baby boomer (1946-1964).","style":{"fontSize":"11px"}},"tooltip":{"backgroundColor":null,"borderWidth":0,"style":{"color":"#000000","fontWeight":"bold"},"headerFormat":"{series.name}<br>{point.x}<br>{point.y}","pointFormat":""},"colors":["#2e2e2e","#29ad53","#fccd25","#ff003f"],"series":[{"data":[46,46.9,48.7,50.4,52.4,54,55.7,56.4,58.3,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Lost","type":"line","marker":{"enabled":false}},{"data":[null,null,null,null,null,null,null,null,null,46,47.3,47.5,48.6,49.3,49.9,51,52.7,54.4,54.3,55,56.4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Greatest","type":"line","marker":{"enabled":false}},{"data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,43.1,44.5,45.7,47.5,49.3,50.9,53,54.4,56.1,57.5,59.2,null,null,null,null,null,null,null,null,null,null,null,null],"name":"Silent","type":"line","marker":{"enabled":false}},{"data":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,48.6,50.3,52.3,54,55.5,56.6,58.1,59.8,61.5,63.5,65,66.3],"name":"Boomers","type":"line","marker":{"enabled":false}}]},"theme":{"colors":["#FF2700","#008FD5","#77AB43","#636464","#C4C4C4"],"chart":{"backgroundColor":"#F0F0F0","plotBorderColor":"#606063","style":{"fontFamily":"Roboto","color":"#3C3C3C"}},"title":{"align":"left","style":{"fontWeight":"bold"}},"subtitle":{"align":"left"},"xAxis":{"gridLineWidth":1,"gridLineColor":"#D7D7D8","labels":{"style":{"fontFamily":"Unica One, sans-serif","color":"#3C3C3C"}},"lineColor":"#D7D7D8","minorGridLineColor":"#505053","tickColor":"#D7D7D8","tickWidth":1,"title":{"style":{"color":"#A0A0A3"}}},"yAxis":{"gridLineColor":"#D7D7D8","labels":{"style":{"fontFamily":"Unica One, sans-serif","color":"#3C3C3C"}},"lineColor":"#D7D7D8","minorGridLineColor":"#505053","tickColor":"#D7D7D8","tickWidth":1,"title":{"style":{"color":"#A0A0A3"}}},"tooltip":{"backgroundColor":"rgba(0, 0, 0, 0.85)","style":{"color":"#F0F0F0"}},"legend":{"itemStyle":{"color":"#3C3C3C"},"itemHiddenStyle":{"color":"#606063"}},"credits":{"style":{"color":"#666"}},"labels":{"style":{"color":"#D7D7D8"}},"legendBackgroundColor":"rgba(0, 0, 0, 0.5)","background2":"#505053","dataLabelsColor":"#B0B0B3","textColor":"#C0C0C0","contrastTextColor":"#F0F0F3","maskColor":"rgba(255,255,255,0.3)"},"conf_opts":{"global":{"Date":null,"VMLRadialGradientURL":"http =//code.highcharts.com/list(version)/gfx/vml-radial-gradient.png","canvasToolsURL":"http =//code.highcharts.com/list(version)/modules/canvas-tools.js","getTimezoneOffset":null,"timezoneOffset":0,"useUTC":true},"lang":{"contextButtonTitle":"Chart context menu","decimalPoint":".","downloadCSV":"Download CSV","downloadJPEG":"Download JPEG image","downloadPDF":"Download PDF document","downloadPNG":"Download PNG image","downloadSVG":"Download SVG vector image","downloadXLS":"Download XLS","drillUpText":"◁ Back to {series.name}","exitFullscreen":"Exit from full screen","exportData":{"annotationHeader":"Annotations","categoryDatetimeHeader":"DateTime","categoryHeader":"Category"},"hideData":"Hide data table","invalidDate":null,"loading":"Loading...","months":["January","February","March","April","May","June","July","August","September","October","November","December"],"noData":"No data to display","numericSymbolMagnitude":1000,"numericSymbols":["k","M","G","T","P","E"],"printChart":"Print chart","resetZoom":"Reset zoom","resetZoomTitle":"Reset zoom level 1:1","shortMonths":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"shortWeekdays":["Sat","Sun","Mon","Tue","Wed","Thu","Fri"],"thousandsSep":" ","viewData":"View data table","viewFullscreen":"View in full screen","weekdays":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]}},"type":"chart","fonts":["Arial","Roboto","Unica+One"],"debug":false},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p><img src="../presentation-exercise/original-viz.png" class="img-fluid"></p>
+<p>After making as many of the necessary changes as I could we have arrived at a fairly faithful reproduction of the original chart. Some of the drawbacks of leveraging ChatGPT to lay the foundation of the visualization is that it made some coding choices with the <code>highcharter</code> package that I wasn’t as familiar with manipulating as I may have been if I had first learned how to utilize the package myself from the ground up. Additionally there were some custom, paid fonts utilized by the publication that I couldn’t quite justify springing for as a student. However, overall the visualization is functional and largely styled in the same manner.</p>
+</section>
+</section>
+<section id="creating-a-clean-table" class="level1">
+<h1>Creating a clean table</h1>
+<section id="laying-the-foundation-with-chatgpt-prompts-1" class="level2">
+<h2 class="anchored" data-anchor-id="laying-the-foundation-with-chatgpt-prompts-1">Laying the foundation with ChatGPT prompts</h2>
+<p>Utilizing the below prompts we arrive at a foundation for a table of generational composition among classes of Congress throughout the years:</p>
+<blockquote class="blockquote">
+<p>Using this data set create a table with the ‘gt’ package in R that calculates the generation composition of each start_date year as percentages. Exclude Gen Z from considerations. Format the values as percentages, center all values and headings, and bold the title.</p>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(gt,</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>               tidyverse)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"../presentation-exercise/raw-data/data_aging_congress.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 29120 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (5): chamber, state_abbrev, bioname, bioguide_id, generation
+dbl  (6): congress, party_code, cmltv_cong, cmltv_chamber, age_days, age_years
+date (2): start_date, birthday
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out Gen Z</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(generation <span class="sc">!=</span> <span class="st">"Gen Z"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract year from start_date</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>start_year <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">as.Date</span>(data<span class="sc">$</span>start_date), <span class="st">"%Y"</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate generation composition by year</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>generation_composition <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(start_year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">percentage =</span> count <span class="sc">/</span> <span class="fu">sum</span>(count) <span class="sc">*</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(start_year, generation, percentage) <span class="sc">%&gt;%</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(<span class="at">key =</span> generation, <span class="at">value =</span> percentage, <span class="at">fill =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'start_year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the table with gt</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>generation_composition <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">md</span>(<span class="st">"**Generation Composition by Start Year**"</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">vars</span>(<span class="sc">-</span>start_year),</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">2</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">vars</span>(<span class="sc">-</span>start_year),</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">2</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_align</span>(</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="st">"center"</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">list</span>(</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cell_text</span>(<span class="at">weight =</span> <span class="st">"bold"</span>)</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_title</span>()</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Since gt v0.3.0, `columns = vars(...)` has been deprecated.
+• Please use `columns = c(...)` instead.
+Since gt v0.3.0, `columns = vars(...)` has been deprecated.
+• Please use `columns = c(...)` instead.</code></pre>
+</div>
+<div class="cell-output-display">
+<div id="mtsnruserz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mtsnruserz table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#mtsnruserz thead, #mtsnruserz tbody, #mtsnruserz tfoot, #mtsnruserz tr, #mtsnruserz td, #mtsnruserz th {
+  border-style: none;
+}
+
+#mtsnruserz p {
+  margin: 0;
+  padding: 0;
+}
+
+#mtsnruserz .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#mtsnruserz .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#mtsnruserz .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#mtsnruserz .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#mtsnruserz .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#mtsnruserz .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#mtsnruserz .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#mtsnruserz .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#mtsnruserz .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#mtsnruserz .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#mtsnruserz .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mtsnruserz .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#mtsnruserz .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#mtsnruserz .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#mtsnruserz .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mtsnruserz .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#mtsnruserz .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#mtsnruserz .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#mtsnruserz .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mtsnruserz .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#mtsnruserz .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mtsnruserz .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mtsnruserz .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mtsnruserz .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mtsnruserz .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mtsnruserz .gt_left {
+  text-align: left;
+}
+
+#mtsnruserz .gt_center {
+  text-align: center;
+}
+
+#mtsnruserz .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#mtsnruserz .gt_font_normal {
+  font-weight: normal;
+}
+
+#mtsnruserz .gt_font_bold {
+  font-weight: bold;
+}
+
+#mtsnruserz .gt_font_italic {
+  font-style: italic;
+}
+
+#mtsnruserz .gt_super {
+  font-size: 65%;
+}
+
+#mtsnruserz .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#mtsnruserz .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#mtsnruserz .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#mtsnruserz .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#mtsnruserz .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#mtsnruserz .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#mtsnruserz .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#mtsnruserz .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#mtsnruserz div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header gt_heading">
+<th colspan="10" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="font-weight: bold"><p><strong>Generation Composition by Start Year</strong></p></th>
+</tr>
+<tr class="odd gt_col_headings">
+<th id="start_year" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">start_year</th>
+<th id="Boomers" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Boomers</th>
+<th id="Gen X" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Gen X</th>
+<th id="Gilded" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Gilded</th>
+<th id="Greatest" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Greatest</th>
+<th id="Lost" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Lost</th>
+<th id="Millennial" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Millennial</th>
+<th id="Missionary" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Missionary</th>
+<th id="Progressive" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Progressive</th>
+<th id="Silent" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Silent</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1919</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">90.09%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">342.34%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,423.42%</td>
+<td class="gt_row gt_center" headers="Progressive">2,144.14%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1921</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">71.43%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">553.57%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,464.29%</td>
+<td class="gt_row gt_center" headers="Progressive">1,910.71%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1923</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">53.86%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">879.71%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,737.88%</td>
+<td class="gt_row gt_center" headers="Progressive">1,328.55%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1925</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">18.25%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">1,259.12%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,645.99%</td>
+<td class="gt_row gt_center" headers="Progressive">1,076.64%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1927</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">18.15%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">1,615.25%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,513.61%</td>
+<td class="gt_row gt_center" headers="Progressive">852.99%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1929</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">17.64%</td>
+<td class="gt_row gt_center" headers="Greatest">17.64%</td>
+<td class="gt_row gt_center" headers="Lost">1,887.13%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,477.95%</td>
+<td class="gt_row gt_center" headers="Progressive">599.65%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1931</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">35.52%</td>
+<td class="gt_row gt_center" headers="Lost">2,593.25%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">7,033.75%</td>
+<td class="gt_row gt_center" headers="Progressive">337.48%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1933</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">164.53%</td>
+<td class="gt_row gt_center" headers="Lost">3,619.74%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">6,014.63%</td>
+<td class="gt_row gt_center" headers="Progressive">201.10%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1935</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">382.51%</td>
+<td class="gt_row gt_center" headers="Lost">4,353.37%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">5,173.04%</td>
+<td class="gt_row gt_center" headers="Progressive">91.07%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1937</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">577.62%</td>
+<td class="gt_row gt_center" headers="Lost">4,891.70%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">4,494.58%</td>
+<td class="gt_row gt_center" headers="Progressive">36.10%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1939</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">962.57%</td>
+<td class="gt_row gt_center" headers="Lost">5,222.82%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">3,761.14%</td>
+<td class="gt_row gt_center" headers="Progressive">53.48%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1941</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1,319.07%</td>
+<td class="gt_row gt_center" headers="Lost">5,543.67%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">3,083.78%</td>
+<td class="gt_row gt_center" headers="Progressive">53.48%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1943</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1,660.65%</td>
+<td class="gt_row gt_center" headers="Lost">5,523.47%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">2,797.83%</td>
+<td class="gt_row gt_center" headers="Progressive">18.05%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1945</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2,127.66%</td>
+<td class="gt_row gt_center" headers="Lost">5,602.84%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">2,251.77%</td>
+<td class="gt_row gt_center" headers="Progressive">17.73%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1947</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">3,019.89%</td>
+<td class="gt_row gt_center" headers="Lost">5,370.71%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">1,609.40%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1949</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">3,580.47%</td>
+<td class="gt_row gt_center" headers="Lost">5,226.04%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">1,193.49%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1951</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">3,978.30%</td>
+<td class="gt_row gt_center" headers="Lost">5,117.54%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">904.16%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1953</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">4,547.10%</td>
+<td class="gt_row gt_center" headers="Lost">4,764.49%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">688.41%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1955</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">5,148.15%</td>
+<td class="gt_row gt_center" headers="Lost">4,351.85%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">500.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1957</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">5,596.33%</td>
+<td class="gt_row gt_center" headers="Lost">3,944.95%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">458.72%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1959</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">6,666.67%</td>
+<td class="gt_row gt_center" headers="Lost">3,061.59%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">253.62%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">18.12%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1961</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">6,989.25%</td>
+<td class="gt_row gt_center" headers="Lost">2,759.86%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">161.29%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">89.61%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1963</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">7,531.76%</td>
+<td class="gt_row gt_center" headers="Lost">2,087.11%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">72.60%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">308.53%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1965</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">7,974.45%</td>
+<td class="gt_row gt_center" headers="Lost">1,441.61%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">36.50%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">547.45%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1967</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">8,029.47%</td>
+<td class="gt_row gt_center" headers="Lost">1,104.97%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">36.83%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">828.73%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1969</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">8,003.63%</td>
+<td class="gt_row gt_center" headers="Lost">816.70%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">1,179.67%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1971</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">7,700.73%</td>
+<td class="gt_row gt_center" headers="Lost">620.44%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">1,678.83%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1973</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">7,262.77%</td>
+<td class="gt_row gt_center" headers="Lost">383.21%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">2,354.01%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1975</td>
+<td class="gt_row gt_center" headers="Boomers">72.60%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">6,225.05%</td>
+<td class="gt_row gt_center" headers="Lost">272.23%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">3,430.13%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1977</td>
+<td class="gt_row gt_center" headers="Boomers">181.49%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">5,408.35%</td>
+<td class="gt_row gt_center" headers="Lost">127.04%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">4,283.12%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1979</td>
+<td class="gt_row gt_center" headers="Boomers">330.88%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">4,540.44%</td>
+<td class="gt_row gt_center" headers="Lost">36.76%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,091.91%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1981</td>
+<td class="gt_row gt_center" headers="Boomers">733.94%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">3,651.38%</td>
+<td class="gt_row gt_center" headers="Lost">18.35%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,596.33%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1983</td>
+<td class="gt_row gt_center" headers="Boomers">1,084.56%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">3,235.29%</td>
+<td class="gt_row gt_center" headers="Lost">18.38%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,661.76%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1985</td>
+<td class="gt_row gt_center" headers="Boomers">1,238.45%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2,865.06%</td>
+<td class="gt_row gt_center" headers="Lost">18.48%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,878.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1987</td>
+<td class="gt_row gt_center" headers="Boomers">1,525.74%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2,389.71%</td>
+<td class="gt_row gt_center" headers="Lost">18.38%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">6,066.18%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1989</td>
+<td class="gt_row gt_center" headers="Boomers">1,743.12%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2,036.70%</td>
+<td class="gt_row gt_center" headers="Lost">18.35%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">6,201.83%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1991</td>
+<td class="gt_row gt_center" headers="Boomers">2,062.04%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1,897.81%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">6,040.15%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1993</td>
+<td class="gt_row gt_center" headers="Boomers">3,003.66%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1,245.42%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,750.92%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1995</td>
+<td class="gt_row gt_center" headers="Boomers">3,812.15%</td>
+<td class="gt_row gt_center" headers="Gen X">55.25%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">883.98%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5,248.62%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">1997</td>
+<td class="gt_row gt_center" headers="Boomers">4,319.85%</td>
+<td class="gt_row gt_center" headers="Gen X">110.29%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">643.38%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">4,926.47%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">1999</td>
+<td class="gt_row gt_center" headers="Boomers">4,656.77%</td>
+<td class="gt_row gt_center" headers="Gen X">129.87%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">538.03%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">4,675.32%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2001</td>
+<td class="gt_row gt_center" headers="Boomers">5,009.14%</td>
+<td class="gt_row gt_center" headers="Gen X">219.38%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">402.19%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">4,369.29%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2003</td>
+<td class="gt_row gt_center" headers="Boomers">5,361.78%</td>
+<td class="gt_row gt_center" headers="Gen X">352.50%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">259.74%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">4,025.97%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2005</td>
+<td class="gt_row gt_center" headers="Boomers">5,648.15%</td>
+<td class="gt_row gt_center" headers="Gen X">462.96%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">203.70%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">3,685.19%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2007</td>
+<td class="gt_row gt_center" headers="Boomers">5,974.50%</td>
+<td class="gt_row gt_center" headers="Gen X">637.52%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">182.15%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">3,205.83%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2009</td>
+<td class="gt_row gt_center" headers="Boomers">5,967.45%</td>
+<td class="gt_row gt_center" headers="Gen X">994.58%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">126.58%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">18.08%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">2,893.31%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2011</td>
+<td class="gt_row gt_center" headers="Boomers">6,153.85%</td>
+<td class="gt_row gt_center" headers="Gen X">1,465.20%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">109.89%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">18.32%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">2,252.75%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2013</td>
+<td class="gt_row gt_center" headers="Boomers">6,313.87%</td>
+<td class="gt_row gt_center" headers="Gen X">1,843.07%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">54.74%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">54.74%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">1,733.58%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2015</td>
+<td class="gt_row gt_center" headers="Boomers">6,284.66%</td>
+<td class="gt_row gt_center" headers="Gen X">2,255.08%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">73.94%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">1,386.32%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2017</td>
+<td class="gt_row gt_center" headers="Boomers">6,324.32%</td>
+<td class="gt_row gt_center" headers="Gen X">2,450.45%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">108.11%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">1,117.12%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2019</td>
+<td class="gt_row gt_center" headers="Boomers">5,569.85%</td>
+<td class="gt_row gt_center" headers="Gen X">2,977.94%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">477.94%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">974.26%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="start_year">2021</td>
+<td class="gt_row gt_center" headers="Boomers">5,462.79%</td>
+<td class="gt_row gt_center" headers="Gen X">3,176.04%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">671.51%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">689.66%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="start_year">2023</td>
+<td class="gt_row gt_center" headers="Boomers">4,841.12%</td>
+<td class="gt_row gt_center" headers="Gen X">3,588.79%</td>
+<td class="gt_row gt_center" headers="Gilded">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">1,028.04%</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Progressive">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">542.06%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Having now had a little more practice with prompting ChatGPT to write effective code and preempt the issues with it’s interpretations of my instructions I’d say that this foundational attempt got quite close to the desired output. However, there remain a handful of issues and layout preferences that need changing.</p>
+<p>Namely we need to address the fact that ChatGPT attempted to convert the values to percent before then formatting those converted values themselves as a percent a second time. It would also be preferred if the columns were arranged in order of their chronology and if the table’s title was a bit more descriptive. Finally, having seen how little representation through the years that the Gilded and Progressive generations have, we may wish to exclude these generations in the same way that we had previously excluded Gen Z.</p>
+</section>
+<section id="refining-the-table" class="level2">
+<h2 class="anchored" data-anchor-id="refining-the-table">Refining the table</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(gt,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>               tidyverse)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the data</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"../presentation-exercise/raw-data/data_aging_congress.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 29120 Columns: 13
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr  (5): chamber, state_abbrev, bioname, bioguide_id, generation
+dbl  (6): congress, party_code, cmltv_cong, cmltv_chamber, age_days, age_years
+date (2): start_date, birthday
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out Gen Z, the Gilded generation, and the Progressive generation</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(generation <span class="sc">!=</span> <span class="st">"Gen Z"</span> <span class="sc">|</span> generation <span class="sc">==</span> <span class="st">"Gilded"</span> <span class="sc">|</span> generation <span class="sc">==</span> <span class="st">"Progressive"</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract year from start_date</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>start_year <span class="ot">&lt;-</span> <span class="fu">format</span>(<span class="fu">as.Date</span>(data<span class="sc">$</span>start_date), <span class="st">"%Y"</span>)</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate generation composition by year</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>generation_composition <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(start_year, generation) <span class="sc">%&gt;%</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">percentage =</span> count <span class="sc">/</span> <span class="fu">sum</span>(count)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(start_year, generation, percentage) <span class="sc">%&gt;%</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spread</span>(<span class="at">key =</span> generation, <span class="at">value =</span> percentage, <span class="at">fill =</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'start_year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rename the column 'start_year' to 'Year' </span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and reorder columns in generation order</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>generation_composition <span class="ot">&lt;-</span> generation_composition <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Year =</span> start_year) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, Missionary, Lost, Greatest, Silent, Boomers, <span class="st">`</span><span class="at">Gen X</span><span class="st">`</span>, Millennial)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the table with gt</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>generation_composition <span class="sc">%&gt;%</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">md</span>(<span class="st">"**Generational Composition of Congress by Year**"</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_number</span>(</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">vars</span>(<span class="sc">-</span>Year),</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">2</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">columns =</span> <span class="fu">vars</span>(<span class="sc">-</span>Year),</span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">decimals =</span> <span class="dv">2</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_align</span>(</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">align =</span> <span class="st">"center"</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">list</span>(</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cell_text</span>(<span class="at">weight =</span> <span class="st">"bold"</span>)</span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_title</span>()</span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Since gt v0.3.0, `columns = vars(...)` has been deprecated.
+• Please use `columns = c(...)` instead.
+Since gt v0.3.0, `columns = vars(...)` has been deprecated.
+• Please use `columns = c(...)` instead.</code></pre>
+</div>
+<div class="cell-output-display">
+<div id="rkiaaumfdj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#rkiaaumfdj table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#rkiaaumfdj thead, #rkiaaumfdj tbody, #rkiaaumfdj tfoot, #rkiaaumfdj tr, #rkiaaumfdj td, #rkiaaumfdj th {
+  border-style: none;
+}
+
+#rkiaaumfdj p {
+  margin: 0;
+  padding: 0;
+}
+
+#rkiaaumfdj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#rkiaaumfdj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#rkiaaumfdj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#rkiaaumfdj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#rkiaaumfdj .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#rkiaaumfdj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#rkiaaumfdj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#rkiaaumfdj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#rkiaaumfdj .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#rkiaaumfdj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#rkiaaumfdj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#rkiaaumfdj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#rkiaaumfdj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#rkiaaumfdj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#rkiaaumfdj .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#rkiaaumfdj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#rkiaaumfdj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#rkiaaumfdj .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#rkiaaumfdj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#rkiaaumfdj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#rkiaaumfdj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#rkiaaumfdj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#rkiaaumfdj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#rkiaaumfdj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#rkiaaumfdj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#rkiaaumfdj .gt_left {
+  text-align: left;
+}
+
+#rkiaaumfdj .gt_center {
+  text-align: center;
+}
+
+#rkiaaumfdj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#rkiaaumfdj .gt_font_normal {
+  font-weight: normal;
+}
+
+#rkiaaumfdj .gt_font_bold {
+  font-weight: bold;
+}
+
+#rkiaaumfdj .gt_font_italic {
+  font-style: italic;
+}
+
+#rkiaaumfdj .gt_super {
+  font-size: 65%;
+}
+
+#rkiaaumfdj .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#rkiaaumfdj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#rkiaaumfdj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#rkiaaumfdj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#rkiaaumfdj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#rkiaaumfdj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#rkiaaumfdj .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#rkiaaumfdj .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#rkiaaumfdj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header gt_heading">
+<th colspan="8" class="gt_heading gt_title gt_font_normal gt_bottom_border" style="font-weight: bold"><p><strong>Generational Composition of Congress by Year</strong></p></th>
+</tr>
+<tr class="odd gt_col_headings">
+<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Year</th>
+<th id="Missionary" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Missionary</th>
+<th id="Lost" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Lost</th>
+<th id="Greatest" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Greatest</th>
+<th id="Silent" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Silent</th>
+<th id="Boomers" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Boomers</th>
+<th id="Gen X" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Gen X</th>
+<th id="Millennial" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Millennial</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1919</td>
+<td class="gt_row gt_center" headers="Missionary">74.23%</td>
+<td class="gt_row gt_center" headers="Lost">3.42%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1921</td>
+<td class="gt_row gt_center" headers="Missionary">74.64%</td>
+<td class="gt_row gt_center" headers="Lost">5.54%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1923</td>
+<td class="gt_row gt_center" headers="Missionary">77.38%</td>
+<td class="gt_row gt_center" headers="Lost">8.80%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1925</td>
+<td class="gt_row gt_center" headers="Missionary">76.46%</td>
+<td class="gt_row gt_center" headers="Lost">12.59%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1927</td>
+<td class="gt_row gt_center" headers="Missionary">75.14%</td>
+<td class="gt_row gt_center" headers="Lost">16.15%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1929</td>
+<td class="gt_row gt_center" headers="Missionary">74.78%</td>
+<td class="gt_row gt_center" headers="Lost">18.87%</td>
+<td class="gt_row gt_center" headers="Greatest">0.18%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1931</td>
+<td class="gt_row gt_center" headers="Missionary">70.34%</td>
+<td class="gt_row gt_center" headers="Lost">25.93%</td>
+<td class="gt_row gt_center" headers="Greatest">0.36%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1933</td>
+<td class="gt_row gt_center" headers="Missionary">60.15%</td>
+<td class="gt_row gt_center" headers="Lost">36.20%</td>
+<td class="gt_row gt_center" headers="Greatest">1.65%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1935</td>
+<td class="gt_row gt_center" headers="Missionary">51.73%</td>
+<td class="gt_row gt_center" headers="Lost">43.53%</td>
+<td class="gt_row gt_center" headers="Greatest">3.83%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1937</td>
+<td class="gt_row gt_center" headers="Missionary">44.95%</td>
+<td class="gt_row gt_center" headers="Lost">48.92%</td>
+<td class="gt_row gt_center" headers="Greatest">5.78%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1939</td>
+<td class="gt_row gt_center" headers="Missionary">37.61%</td>
+<td class="gt_row gt_center" headers="Lost">52.23%</td>
+<td class="gt_row gt_center" headers="Greatest">9.63%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1941</td>
+<td class="gt_row gt_center" headers="Missionary">30.84%</td>
+<td class="gt_row gt_center" headers="Lost">55.44%</td>
+<td class="gt_row gt_center" headers="Greatest">13.19%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1943</td>
+<td class="gt_row gt_center" headers="Missionary">27.98%</td>
+<td class="gt_row gt_center" headers="Lost">55.23%</td>
+<td class="gt_row gt_center" headers="Greatest">16.61%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1945</td>
+<td class="gt_row gt_center" headers="Missionary">22.52%</td>
+<td class="gt_row gt_center" headers="Lost">56.03%</td>
+<td class="gt_row gt_center" headers="Greatest">21.28%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1947</td>
+<td class="gt_row gt_center" headers="Missionary">16.09%</td>
+<td class="gt_row gt_center" headers="Lost">53.71%</td>
+<td class="gt_row gt_center" headers="Greatest">30.20%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1949</td>
+<td class="gt_row gt_center" headers="Missionary">11.93%</td>
+<td class="gt_row gt_center" headers="Lost">52.26%</td>
+<td class="gt_row gt_center" headers="Greatest">35.80%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1951</td>
+<td class="gt_row gt_center" headers="Missionary">9.04%</td>
+<td class="gt_row gt_center" headers="Lost">51.18%</td>
+<td class="gt_row gt_center" headers="Greatest">39.78%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1953</td>
+<td class="gt_row gt_center" headers="Missionary">6.88%</td>
+<td class="gt_row gt_center" headers="Lost">47.64%</td>
+<td class="gt_row gt_center" headers="Greatest">45.47%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1955</td>
+<td class="gt_row gt_center" headers="Missionary">5.00%</td>
+<td class="gt_row gt_center" headers="Lost">43.52%</td>
+<td class="gt_row gt_center" headers="Greatest">51.48%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1957</td>
+<td class="gt_row gt_center" headers="Missionary">4.59%</td>
+<td class="gt_row gt_center" headers="Lost">39.45%</td>
+<td class="gt_row gt_center" headers="Greatest">55.96%</td>
+<td class="gt_row gt_center" headers="Silent">0.00%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1959</td>
+<td class="gt_row gt_center" headers="Missionary">2.54%</td>
+<td class="gt_row gt_center" headers="Lost">30.62%</td>
+<td class="gt_row gt_center" headers="Greatest">66.67%</td>
+<td class="gt_row gt_center" headers="Silent">0.18%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1961</td>
+<td class="gt_row gt_center" headers="Missionary">1.61%</td>
+<td class="gt_row gt_center" headers="Lost">27.60%</td>
+<td class="gt_row gt_center" headers="Greatest">69.89%</td>
+<td class="gt_row gt_center" headers="Silent">0.90%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1963</td>
+<td class="gt_row gt_center" headers="Missionary">0.73%</td>
+<td class="gt_row gt_center" headers="Lost">20.87%</td>
+<td class="gt_row gt_center" headers="Greatest">75.32%</td>
+<td class="gt_row gt_center" headers="Silent">3.09%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1965</td>
+<td class="gt_row gt_center" headers="Missionary">0.36%</td>
+<td class="gt_row gt_center" headers="Lost">14.42%</td>
+<td class="gt_row gt_center" headers="Greatest">79.74%</td>
+<td class="gt_row gt_center" headers="Silent">5.47%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1967</td>
+<td class="gt_row gt_center" headers="Missionary">0.37%</td>
+<td class="gt_row gt_center" headers="Lost">11.05%</td>
+<td class="gt_row gt_center" headers="Greatest">80.29%</td>
+<td class="gt_row gt_center" headers="Silent">8.29%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1969</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">8.17%</td>
+<td class="gt_row gt_center" headers="Greatest">80.04%</td>
+<td class="gt_row gt_center" headers="Silent">11.80%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1971</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">6.20%</td>
+<td class="gt_row gt_center" headers="Greatest">77.01%</td>
+<td class="gt_row gt_center" headers="Silent">16.79%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1973</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">3.83%</td>
+<td class="gt_row gt_center" headers="Greatest">72.63%</td>
+<td class="gt_row gt_center" headers="Silent">23.54%</td>
+<td class="gt_row gt_center" headers="Boomers">0.00%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1975</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">2.72%</td>
+<td class="gt_row gt_center" headers="Greatest">62.25%</td>
+<td class="gt_row gt_center" headers="Silent">34.30%</td>
+<td class="gt_row gt_center" headers="Boomers">0.73%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1977</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">1.27%</td>
+<td class="gt_row gt_center" headers="Greatest">54.08%</td>
+<td class="gt_row gt_center" headers="Silent">42.83%</td>
+<td class="gt_row gt_center" headers="Boomers">1.81%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1979</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.37%</td>
+<td class="gt_row gt_center" headers="Greatest">45.40%</td>
+<td class="gt_row gt_center" headers="Silent">50.92%</td>
+<td class="gt_row gt_center" headers="Boomers">3.31%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1981</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.18%</td>
+<td class="gt_row gt_center" headers="Greatest">36.51%</td>
+<td class="gt_row gt_center" headers="Silent">55.96%</td>
+<td class="gt_row gt_center" headers="Boomers">7.34%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1983</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.18%</td>
+<td class="gt_row gt_center" headers="Greatest">32.35%</td>
+<td class="gt_row gt_center" headers="Silent">56.62%</td>
+<td class="gt_row gt_center" headers="Boomers">10.85%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1985</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.18%</td>
+<td class="gt_row gt_center" headers="Greatest">28.65%</td>
+<td class="gt_row gt_center" headers="Silent">58.78%</td>
+<td class="gt_row gt_center" headers="Boomers">12.38%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1987</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.18%</td>
+<td class="gt_row gt_center" headers="Greatest">23.90%</td>
+<td class="gt_row gt_center" headers="Silent">60.66%</td>
+<td class="gt_row gt_center" headers="Boomers">15.26%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1989</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.18%</td>
+<td class="gt_row gt_center" headers="Greatest">20.37%</td>
+<td class="gt_row gt_center" headers="Silent">62.02%</td>
+<td class="gt_row gt_center" headers="Boomers">17.43%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1991</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">18.98%</td>
+<td class="gt_row gt_center" headers="Silent">60.40%</td>
+<td class="gt_row gt_center" headers="Boomers">20.62%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1993</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">12.45%</td>
+<td class="gt_row gt_center" headers="Silent">57.51%</td>
+<td class="gt_row gt_center" headers="Boomers">30.04%</td>
+<td class="gt_row gt_center" headers="Gen X">0.00%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1995</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">8.84%</td>
+<td class="gt_row gt_center" headers="Silent">52.49%</td>
+<td class="gt_row gt_center" headers="Boomers">38.12%</td>
+<td class="gt_row gt_center" headers="Gen X">0.55%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">1997</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">6.43%</td>
+<td class="gt_row gt_center" headers="Silent">49.26%</td>
+<td class="gt_row gt_center" headers="Boomers">43.20%</td>
+<td class="gt_row gt_center" headers="Gen X">1.10%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">1999</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">5.38%</td>
+<td class="gt_row gt_center" headers="Silent">46.75%</td>
+<td class="gt_row gt_center" headers="Boomers">46.57%</td>
+<td class="gt_row gt_center" headers="Gen X">1.30%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2001</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">4.02%</td>
+<td class="gt_row gt_center" headers="Silent">43.69%</td>
+<td class="gt_row gt_center" headers="Boomers">50.09%</td>
+<td class="gt_row gt_center" headers="Gen X">2.19%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2003</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2.60%</td>
+<td class="gt_row gt_center" headers="Silent">40.26%</td>
+<td class="gt_row gt_center" headers="Boomers">53.62%</td>
+<td class="gt_row gt_center" headers="Gen X">3.53%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2005</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">2.04%</td>
+<td class="gt_row gt_center" headers="Silent">36.85%</td>
+<td class="gt_row gt_center" headers="Boomers">56.48%</td>
+<td class="gt_row gt_center" headers="Gen X">4.63%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2007</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1.82%</td>
+<td class="gt_row gt_center" headers="Silent">32.06%</td>
+<td class="gt_row gt_center" headers="Boomers">59.74%</td>
+<td class="gt_row gt_center" headers="Gen X">6.38%</td>
+<td class="gt_row gt_center" headers="Millennial">0.00%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2009</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1.27%</td>
+<td class="gt_row gt_center" headers="Silent">28.93%</td>
+<td class="gt_row gt_center" headers="Boomers">59.67%</td>
+<td class="gt_row gt_center" headers="Gen X">9.95%</td>
+<td class="gt_row gt_center" headers="Millennial">0.18%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2011</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">1.10%</td>
+<td class="gt_row gt_center" headers="Silent">22.53%</td>
+<td class="gt_row gt_center" headers="Boomers">61.54%</td>
+<td class="gt_row gt_center" headers="Gen X">14.65%</td>
+<td class="gt_row gt_center" headers="Millennial">0.18%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2013</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.55%</td>
+<td class="gt_row gt_center" headers="Silent">17.34%</td>
+<td class="gt_row gt_center" headers="Boomers">63.14%</td>
+<td class="gt_row gt_center" headers="Gen X">18.43%</td>
+<td class="gt_row gt_center" headers="Millennial">0.55%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2015</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">13.86%</td>
+<td class="gt_row gt_center" headers="Boomers">62.85%</td>
+<td class="gt_row gt_center" headers="Gen X">22.55%</td>
+<td class="gt_row gt_center" headers="Millennial">0.74%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2017</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">11.17%</td>
+<td class="gt_row gt_center" headers="Boomers">63.24%</td>
+<td class="gt_row gt_center" headers="Gen X">24.50%</td>
+<td class="gt_row gt_center" headers="Millennial">1.08%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2019</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">9.74%</td>
+<td class="gt_row gt_center" headers="Boomers">55.70%</td>
+<td class="gt_row gt_center" headers="Gen X">29.78%</td>
+<td class="gt_row gt_center" headers="Millennial">4.78%</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_center" headers="Year">2021</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">6.90%</td>
+<td class="gt_row gt_center" headers="Boomers">54.63%</td>
+<td class="gt_row gt_center" headers="Gen X">31.76%</td>
+<td class="gt_row gt_center" headers="Millennial">6.72%</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_center" headers="Year">2023</td>
+<td class="gt_row gt_center" headers="Missionary">0.00%</td>
+<td class="gt_row gt_center" headers="Lost">0.00%</td>
+<td class="gt_row gt_center" headers="Greatest">0.00%</td>
+<td class="gt_row gt_center" headers="Silent">5.42%</td>
+<td class="gt_row gt_center" headers="Boomers">48.41%</td>
+<td class="gt_row gt_center" headers="Gen X">35.89%</td>
+<td class="gt_row gt_center" headers="Millennial">10.28%</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
