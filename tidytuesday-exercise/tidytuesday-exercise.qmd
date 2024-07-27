@@ -2,4 +2,280 @@
 title: "Tidy Tuesday Exercise"
 ---
 
-Placeholder file for the future Tidy Tuesday exercise.
+# Loading the Data
+
+```{r}
+pacman::p_load(tidytuesdayR, # loads tidytuesday data from repo
+               here, # assists with location
+               skimr, # for undestanding structure
+               tidyverse, # for wrangling and visualizing
+               ggtext, # for enhanced text
+               showtext, # for enhanced text
+               MetBrewer, # for pleasing color palettes
+               wesanderson, # for pleasing color palettes
+               caret, # for modeling
+               earth) # for modeling
+set.seed(42)
+```
+
+```{r}
+# read in the proper week's data
+full_data <- tt_load(2024, 30, auth = github_pat())
+
+# if the above fails a .rds file with the appropriate data 
+# can be found in the data folder
+# full_data <- readRDS(here("tidytuesday-exercise", "data", "tidytuesday.rds"))
+full_data
+```
+
+```{r}
+# create distinct dataframes
+auditions <- as.data.frame(full_data$auditions)
+eliminations <- as.data.frame(full_data$eliminations)
+finalists <- as.data.frame(full_data$finalists)
+ratings <- as.data.frame(full_data$ratings)
+seasons <- as.data.frame(full_data$seasons)
+songs <- as.data.frame(full_data$songs)
+```
+
+# Exploring the Data
+## Examining the Structure
+
+```{r}
+skim(ratings)
+head(ratings)
+skim(seasons)
+head(seasons)
+```
+## Visualizing the Data
+
+```{r warning=FALSE}
+# data set for plotting
+ratings2 <- ratings %>% 
+            mutate(date = mdy(airdate)) %>% 
+            mutate(date = case_when(is.na(date) ~ str_glue("{airdate}, 2014"),
+                                    .default = airdate)) %>% 
+            mutate(date = mdy(date),
+                   weekrank = as.numeric(weekrank)) %>% 
+            dplyr::select(-airdate) %>% 
+            group_by(season) %>% 
+            mutate(last_ep = max(show_number)) %>% 
+            ungroup() %>% 
+            mutate(last_ep = as.factor(last_ep == show_number),
+                   viewers_in_millions = viewers_in_millions * 1000000)
+
+# number format for plot
+millions_formatter <- function(x) {
+  scales::number(x / 1e6, suffix = "M")
+}
+
+# plot weekrank against viewership
+ratings2 %>% 
+  ggplot(aes(weekrank, viewers_in_millions, colour = as.factor(season))) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(aes(group = 1), 
+              method = "lm", 
+              formula = y ~ x, 
+              se = F, 
+              colour = "#012d90", 
+              linewidth = 0.5, 
+              linetype = 2) +
+  theme_light() +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = 0.5, face = "bold")) +
+  labs(title = "Viewership vs Weekly Rank") + xlab("Rank") + ylab(NULL) +
+  scale_color_discrete(type = met.brewer(colorblind_palettes[5], n = 17)) +
+  scale_y_continuous(labels = millions_formatter, limits = c(0, NA))
+
+# plot viewership over time
+ratings2 %>% 
+  ggplot(aes(date, viewers_in_millions, shape = last_ep, colour = as.factor(season))) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(aes(group = 1),
+              method = "loess",
+              formula = y ~ x,
+              se = F,
+              colour = "#012d90",
+              linewidth = 0.5,
+              linetype = 2) +
+  theme_light() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, face = "bold"),
+        plot.caption = element_text(face = "italic")) +
+  labs(title = "Viewership Through The Years", 
+       caption = "*season finales formatted differently") +
+  xlab(NULL) + ylab(NULL) +
+  scale_color_discrete(type = met.brewer(colorblind_palettes[5], n = 17)) +
+  scale_y_continuous(labels = millions_formatter, limits = c(0, NA)) +
+  scale_shape_manual(values = c(20, 25))
+```
+
+# Predicting Viewership Numbers
+## Preparing the Data
+
+```{r}
+# subset judges per season
+seasons2 <- seasons %>% 
+  dplyr::select(season, judges)
+
+# join judges and episode ratings data for modeling
+ratings_model <- ratings %>% 
+            left_join(seasons2, by = join_by(season)) %>% 
+            mutate(simon = as.factor(grepl("Simon Cowell", judges)),
+                   weekrank = as.numeric(weekrank)) %>%
+            filter(!is.na(weekrank)) %>% 
+            group_by(season) %>% 
+            mutate(season_length = max(show_number)) %>% 
+            ungroup() %>% 
+            dplyr::select(viewers_in_millions, season_length, weekrank, simon) %>% 
+            filter(!is.na(viewers_in_millions))
+```
+
+```{r}
+# create train and test sets for modeling
+response <- ratings_model$viewers_in_millions
+predictors <- ratings_model[,2:4]
+inTrain <- createDataPartition(response, p = .7, list = F)
+
+trainy <- response[inTrain]
+testy <- response[-inTrain]
+trainX <- predictors[inTrain,]
+testX <- predictors[-inTrain,]
+
+# create model controls
+indx <- createFolds(trainy, returnTrain = T)
+ctrl <- trainControl(method = "cv", number = 5, index = indx)
+```
+
+## Fitting Models
+
+```{r warning=FALSE}
+# train a linear model
+lm <- train(x = trainX, 
+            y = trainy, 
+            method = "lm", 
+            trControl = ctrl,
+            preProcess = c("center", "scale"))
+postResample(pred = predict(lm, trainX), obs = trainy)
+
+# train residuals plot
+lmresidplot <- cbind(as.data.frame(lm$finalModel$residuals),
+                     as.data.frame(lm$finalModel$fitted.values)) %>% 
+               rename_all(~ c("Residuals", "Predicted"))
+
+# train residuals plot
+lmresidplot %>% 
+  ggplot(aes(Predicted, Residuals)) +
+  geom_point(colour = "#012d90", alpha = 0.6) +
+  geom_smooth(method = "lm",
+              formula = y ~x,
+              se = F) +
+  theme_light()
+```
+
+While the R-squared value of the linear model is overall fairly performant, with all 3 predictors statistically significant, we can see that when we plot residuals against their predictions there are a number of issues. There is clear inconsistency in the variance of residuals at different degrees of predicted values and there is also clear evidence of non-linearity. This sugggests a non-linear method is likely the better approach. 
+
+```{r warning=FALSE}
+# train a random forest model
+rf <- train(trainX,
+            trainy,
+            method = "rf",
+            trControl = ctrl,
+            tuneGrid = expand.grid(mtry = c(1,2,3)),
+            ntree = 1000,   
+            nodesize = 5,
+            maxnodes = 30,
+            verbose = FALSE,
+            allowParellel = TRUE)
+postResample(pred = predict(rf, trainX), obs = trainy)
+# variable importance plot
+plot(varImp(rf, scale = F), col = "#012d90")
+
+# generate train residuals
+rf_train_residuals <- rf$finalModel$predicted - trainy
+rfresidplot <- cbind(as.data.frame(rf_train_residuals),
+                     as.data.frame(rf$finalModel$predicted)) %>% 
+               rename_all(~ c("Residuals", "Predicted"))
+
+# train residuals plot
+rfresidplot %>% 
+  ggplot(aes(Predicted, Residuals)) +
+  geom_point(colour = "#012d90", alpha = 0.6) +
+  geom_smooth(method = "lm",
+              formula = y ~x,
+              se = F) +
+  theme_light()
+```
+
+Judging from the RMSE and the training residuals we can see that the model performs reasonably well at predicted most of the range of expected values. However, once predictions start to veer into the higher values the performance of the model degrades as variance increases. This is likely a result of some of the outlier episodes with high weekly ranks, viewership numbers, and as part of the more successful and long seasons -- all of which could hurt the predictive accuracy of those points.
+
+```{r warning=FALSE}
+# train a MARS model
+mars <- train(trainX,
+              trainy,
+              method = "earth",
+              tuneGrid = expand.grid(degree = 1,
+                                     nprune = 2:20),
+              trControl = ctrl)
+postResample(pred = predict(mars, trainX), obs = trainy)
+
+# plot RMSE against # of splines
+mars$results %>% 
+  mutate(lowest = RMSE == min(RMSE)) %>% 
+  ggplot(aes(nprune, RMSE, colour = lowest)) +
+  geom_line(colour = "#012d90") +
+  geom_point() +
+  theme_light() +
+  theme(legend.position = "none") +
+  xlab("# of Terms") +
+  scale_color_discrete(type = c("#012d90", "firebrick3"))
+
+# plot variable importance
+marsImp <- varImp(mars, scale = F)
+plot(marsImp, top = 3, col = "#012d90")
+
+# generate train residuals
+marsresidplot <- cbind(as.data.frame(mars$finalModel$residuals),
+                       as.data.frame(mars$finalModel$fitted.values))
+names(marsresidplot) <- c("Residuals", "Predicted")
+
+# train residuals plot
+marsresidplot %>% 
+  ggplot(aes(Predicted, Residuals)) +
+  geom_point(colour = "#012d90", alpha = 0.6) +
+  geom_smooth(method = "lm",
+              formula = y ~x,
+              se = F) +
+  theme_light()
+```
+
+Judging once again by the residual plot we see a similar story emerge for the MARS model as we did for the random forest model. However tightness about the zero line appears to be worse at all levels of predicted value. The RMSE value for this model on the training data corroborates the slightly worse performance. 
+
+Given the fact that the residuals for the linear model demonstrate some non-linearity and that the MARS model fairs worse at predicting accurately the viewership across all levels of predicted values, I'm inclined to choose the random forest model as our final model for predicted viewership. 
+
+# Assesing Final Model
+
+```{r}
+# generate test predictions
+testpreds <- predict(rf, testX)
+
+# assess predictive accuracy
+postResample(pred = testpreds, obs = testy)
+
+# create and plot residuals
+Residuals <- testpreds - testy
+testresidplot <- cbind(as.data.frame(Residuals),
+                       as.data.frame(testpreds))
+names(testresidplot) <- c("Residuals", "Predicted")
+
+# train residuals plot
+marsresidplot %>% 
+  ggplot(aes(Predicted, Residuals)) +
+  geom_point(colour = "#012d90", alpha = 0.6) +
+  geom_smooth(method = "lm",
+              formula = y ~x,
+              se = F) +
+  theme_light()
+```
+
+As we can see the generality of the model is fairly good -- with similar performance in terms of both RMSE and R-squared when the model is applied to new test data for the first time. While performance isn't as good as the with the training data, it's still better the second best model -- the MARS model -- was with training data. As we can see with the residual plot the prediction handling lands somewhere between that of the MARS model and the random forest model on the training data with uncertainty increasing in particular as the predicted values increase in magnitude. 
